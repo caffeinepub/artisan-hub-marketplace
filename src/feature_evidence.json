@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-bulk-image-upload-functionality-to-the-artist-dashboard-that-allows-artists-to-select-multiple-image-files-at-once-and-automatically-create-a-separate-product-listing-for-each-uploaded-image",
-      "featureTitle": "Add bulk image upload functionality to the artist dashboard that allows artists to select multiple image files at once and automatically create a separate product listing for each uploaded image",
+      "featureId": "feature-add-payment-configuration-section-to-the-artistdashboard-page-in-frontend-src-pages-artistdashboard-tsx-with-a-form-allowing-artists-to-either-provide-a-stripe-api-key-directly-or-use-stripe-connect-onboarding",
+      "featureTitle": "Add payment configuration section to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx with a form allowing artists to either provide a Stripe API key directly or use Stripe Connect onboarding",
       "files": [
-        "frontend/src/components/BulkImageUpload.tsx",
+        "frontend/src/components/PaymentMethodSetup.tsx",
         "frontend/src/hooks/useQueries.ts",
         "frontend/src/pages/ArtistDashboard.tsx"
       ],
@@ -21,63 +21,17 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-19"
+        "REQ-38"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-create-a-donation-creation-flow-in-the-artist-dashboard-that-allows-artists-to-set-up-donation-options-with-customizable-amounts-descriptions-and-optional-suggested-amounts",
-      "featureTitle": "Create a donation creation flow in the artist dashboard that allows artists to set up donation options with customizable amounts, descriptions, and optional suggested amounts",
+      "featureId": "feature-add-stripe-account-configuration-form-to-the-admindashboard-page-in-frontend-src-pages-admindashboard-tsx-where-platform-admin-can-input-and-save-their-stripe-account-id-to-receive-commission-payments",
+      "featureTitle": "Add Stripe account configuration form to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx where platform admin can input and save their Stripe account ID to receive commission payments",
       "files": [
-        "frontend/src/components/DonationCard.tsx",
-        "frontend/src/components/DonationForm.tsx",
-        "frontend/src/pages/ArtistDashboard.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-21"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-separate-filtering-and-display-sections-in-the-marketplace-listing-page-to-show-products-and-donations-in-distinct-areas",
-      "featureTitle": "Implement separate filtering and display sections in the marketplace listing page to show products and donations in distinct areas",
-      "files": [
-        "frontend/src/pages/ProductListing.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-22"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-store-settings-interface-for-artists-to-customize-their-store-presentation-including-store-name-bio-banner-image-and-social-media-links",
-      "featureTitle": "Add a store settings interface for artists to customize their store presentation including store name, bio, banner image, and social media links",
-      "files": [
-        "frontend/src/components/StoreSettingsForm.tsx",
+        "frontend/src/components/AdminStripeAccountSetup.tsx",
         "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ArtistDashboard.tsx"
+        "frontend/src/pages/AdminDashboard.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -91,16 +45,17 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-23"
+        "REQ-40"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-create-a-public-artist-store-page-that-displays-an-individual-artist-s-products-and-donations-with-their-customized-store-branding-and-settings",
-      "featureTitle": "Create a public artist store page that displays an individual artist's products and donations with their customized store branding and settings",
+      "featureId": "feature-update-the-buynowbutton-component-in-frontend-src-components-buynowbutton-tsx-to-trigger-the-processsplitpayment-backend-function-after-successful-stripe-checkout-completion-ensuring-automatic-payment-distribution-occurs",
+      "featureTitle": "Update the BuyNowButton component in frontend/src/components/BuyNowButton.tsx to trigger the processSplitPayment backend function after successful Stripe checkout completion, ensuring automatic payment distribution occurs",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/ArtistStorePage.tsx"
+        "frontend/src/components/BuyNowButton.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/PaymentSuccess.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -114,14 +69,15 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-24"
+        "REQ-42"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-navigation-from-product-cards-in-the-main-marketplace-to-individual-artist-store-pages-so-buyers-can-explore-all-items-from-a-specific-artist",
-      "featureTitle": "Add navigation from product cards in the main marketplace to individual artist store pages so buyers can explore all items from a specific artist",
+      "featureId": "feature-add-validation-to-the-product-checkout-flow-that-prevents-purchase-if-either-the-artist-or-admin-has-not-configured-their-stripe-payment-details-displaying-a-clear-error-message-to-the-buyer",
+      "featureTitle": "Add validation to the product checkout flow that prevents purchase if either the artist or admin has not configured their Stripe payment details, displaying a clear error message to the buyer",
       "files": [
+        "frontend/src/components/BuyNowButton.tsx",
         "frontend/src/components/DonationCard.tsx",
         "frontend/src/components/ProductCard.tsx"
       ],
@@ -137,7 +93,7 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-25"
+        "REQ-43"
       ],
       "confidence": "high"
     }

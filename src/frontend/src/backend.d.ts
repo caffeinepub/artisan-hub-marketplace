@@ -17,11 +17,13 @@ export class ExternalBlob {
 export interface Product {
     id: string;
     categoryName: string;
+    imageUrls: Array<string>;
     name: string;
     artistId: string;
     description: string;
     productType: ProductType;
     price: bigint;
+    videoUrl?: string;
 }
 export interface TransformationOutput {
     status: bigint;
@@ -86,6 +88,7 @@ export interface ArtistProfile {
 }
 export interface UserProfile {
     bio?: string;
+    stripeApiKey?: string;
     name: string;
     email: string;
 }
@@ -106,6 +109,7 @@ export interface backendInterface {
     deleteProduct(productId: string): Promise<void>;
     getAllArtists(): Promise<Array<ArtistProfile>>;
     getAllProducts(): Promise<Array<Product>>;
+    getAllProductsForArtist(artistId: string): Promise<Array<Product>>;
     getArtist(artistId: string): Promise<ArtistProfile | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -117,8 +121,10 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
+    processSplitPayment(item: ShoppingItem, artistId: string, buyerId: Principal): Promise<void>;
     registerArtist(profile: ArtistProfile): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setAdminStripeAccountId(accountId: string): Promise<void>;
     setPlatformCommissionRate(newRate: bigint): Promise<void>;
     setStripeConfiguration(config: StripeConfiguration): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;

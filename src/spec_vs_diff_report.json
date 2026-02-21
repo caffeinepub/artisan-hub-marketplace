@@ -1,51 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T10:01:13.075Z",
-  "summary": "The implementation covers most core requirements for bulk image upload, artist donations, and product store settings. Key features include: ProductType enum with product/donation variants (REQ-20), bulk image upload with progress tracking (REQ-19), donation creation forms (REQ-21), separate product/donation tabs in marketplace (REQ-22), store settings interface (REQ-23), public artist store pages (REQ-24), and artist store links from product cards (REQ-25). However, several acceptance criteria are missing evidence in the diff, particularly around buyer-specified custom donation amounts, product detail editing after bulk upload, and detailed error handling.",
+  "generatedAt": "2026-02-21T11:14:36.851Z",
+  "summary": "The implementation adds backend storage fields (stripeApiKey in UserProfile, adminStripeAccountId in backend), frontend UI components for payment configuration (PaymentMethodSetup, AdminStripeAccountSetup), and payment validation logic in checkout flow. However, the critical REQ-41 processSplitPayment function and REQ-42 split payment trigger after checkout are missing from the diff.",
   "missing_requirements": [
     {
-      "id": "REQ-19",
-      "requirement": "Artist can edit product details (name, description, price, category) after bulk creation",
-      "reason": "BulkImageUpload.tsx creates products with hardcoded values ('Product description', price 1000, category 'Uncategorized') but no evidence of immediate editing UI after bulk upload completes. ArtistDashboard.tsx shows general product editing, but not specifically tied to post-bulk-upload workflow.",
+      "id": "REQ-41",
+      "requirement": "Implement backend function named processSplitPayment that calculates commission split and coordinates payment distribution",
+      "reason": "No processSplitPayment function found in backend/main.mo. The diff shows only data model changes and validation logic, but no implementation of the actual split payment calculation and distribution function.",
       "evidence": [
-        "frontend/src/components/BulkImageUpload.tsx"
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "requirement": "Error handling shows which files failed to upload and why",
-      "reason": "BulkImageUpload.tsx sets error status and stores error messages in UploadFile state, but the truncated component code does not show UI rendering of specific file-level errors to the user.",
-      "evidence": [
-        "frontend/src/components/BulkImageUpload.tsx"
-      ]
-    },
-    {
-      "id": "REQ-21",
-      "requirement": "Buyers can specify custom donation amounts at checkout",
-      "reason": "DonationCard.tsx allows custom amount input in a dialog, but the handleDonate function is truncated. No evidence in backend/main.mo diff showing support for variable pricing at checkout session creation. The checkout flow may only support the fixed suggested amount.",
-      "evidence": [
-        "frontend/src/components/DonationCard.tsx",
         "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-42",
+      "requirement": "Update BuyNowButton to trigger processSplitPayment after successful Stripe checkout completion",
+      "reason": "BuyNowButton.tsx only validates payment configuration before checkout but does not call processSplitPayment after checkout completion. No post-checkout callback or split payment trigger is implemented.",
+      "evidence": [
+        "frontend/src/components/BuyNowButton.tsx"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.75,
+  "hallucinated_features": [
+    {
+      "description": "Migration module for handling UserProfile schema migration",
+      "reason": "BuildRequest contains no requirement for data migration or upgrade logic. The migration.mo file with schema migration code was not requested.",
+      "evidence": [
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "description": "Payment configuration status indicators on ProductCard and DonationCard",
+      "reason": "While REQ-43 requires validation blocking checkout and error messages, the BuildRequest does not explicitly request status badges/tooltips on product cards indicating payment configuration status.",
+      "evidence": [
+        "frontend/src/components/ProductCard.tsx",
+        "frontend/src/components/DonationCard.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.85,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BulkImageUpload.tsx",
+    "frontend/src/components/AdminStripeAccountSetup.tsx",
+    "frontend/src/components/BuyNowButton.tsx",
     "frontend/src/components/DonationCard.tsx",
-    "frontend/src/components/DonationForm.tsx",
+    "frontend/src/components/PaymentMethodSetup.tsx",
     "frontend/src/components/ProductCard.tsx",
-    "frontend/src/components/StoreSettingsForm.tsx",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/AdminDashboard.tsx",
     "frontend/src/pages/ArtistDashboard.tsx",
-    "frontend/src/pages/ArtistStorePage.tsx",
-    "frontend/src/pages/ProductListing.tsx",
+    "frontend/src/pages/PaymentSuccess.tsx",
     "project_state.json"
   ]
 }

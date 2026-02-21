@@ -50,6 +50,8 @@ export default function DonationForm({ artistId, onSuccess }: DonationFormProps)
         price: BigInt(priceInCents),
         categoryName: data.categoryName || 'Support',
         productType: ProductType.donation,
+        imageUrls: [],
+        videoUrl: undefined,
       });
 
       reset();

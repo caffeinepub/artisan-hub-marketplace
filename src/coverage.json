@@ -1,101 +1,93 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T10:01:13.078Z",
+  "generatedAt": "2026-02-21T11:14:36.855Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 7,
-    "implemented": 6,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-19",
-        "summary": "Add bulk image upload functionality to the artist dashboard that allows artists to select multiple image files at once and automatically create a separate product listing for each uploaded image",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/BulkImageUpload.tsx",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ArtistDashboard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/BulkImageUpload.tsx",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ArtistDashboard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-20",
-        "summary": "Update the Product data model in the backend to include a productType field that distinguishes between 'product' and 'donation' types",
+        "id": "REQ-37",
+        "summary": "Add a stripeApiKey optional field of type ?Text to the UserProfile data model in backend/main.mo to store artists' Stripe secret keys for direct payment configuration",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-21",
-        "summary": "Create a donation creation flow in the artist dashboard that allows artists to set up donation options with customizable amounts, descriptions, and optional suggested amounts",
+        "id": "REQ-38",
+        "summary": "Add payment configuration section to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx with a form allowing artists to either provide a Stripe API key directly or use Stripe Connect onboarding",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/DonationForm.tsx",
-          "frontend/src/components/DonationCard.tsx",
-          "frontend/src/pages/ArtistDashboard.tsx"
+          "frontend/src/components/PaymentMethodSetup.tsx",
+          "frontend/src/pages/ArtistDashboard.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/DonationForm.tsx",
-          "frontend/src/components/DonationCard.tsx",
-          "frontend/src/pages/ArtistDashboard.tsx"
+          "frontend/src/components/PaymentMethodSetup.tsx",
+          "frontend/src/pages/ArtistDashboard.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
-        "id": "REQ-22",
-        "summary": "Implement separate filtering and display sections in the marketplace listing page to show products and donations in distinct areas",
+        "id": "REQ-39",
+        "summary": "Add adminStripeAccountId field of type ?Text to backend storage in backend/main.mo to store the platform admin's Stripe account identifier for receiving commission payments",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-40",
+        "summary": "Add Stripe account configuration form to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx where platform admin can input and save their Stripe account ID to receive commission payments",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ProductListing.tsx"
+          "frontend/src/components/AdminStripeAccountSetup.tsx",
+          "frontend/src/pages/AdminDashboard.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ProductListing.tsx"
+          "frontend/src/components/AdminStripeAccountSetup.tsx",
+          "frontend/src/pages/AdminDashboard.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ]
       },
       {
-        "id": "REQ-23",
-        "summary": "Add a store settings interface for artists to customize their store presentation including store name, bio, banner image, and social media links",
+        "id": "REQ-41",
+        "summary": "Implement backend function in backend/main.mo named processSplitPayment that calculates the commission split based on the configured commission rate, and coordinates payment distribution to both admin and artist Stripe accounts",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-42",
+        "summary": "Update the BuyNowButton component in frontend/src/components/BuyNowButton.tsx to trigger the processSplitPayment backend function after successful Stripe checkout completion, ensuring automatic payment distribution occurs",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/StoreSettingsForm.tsx",
+          "frontend/src/components/BuyNowButton.tsx",
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ArtistDashboard.tsx"
+          "frontend/src/pages/PaymentSuccess.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/StoreSettingsForm.tsx",
+          "frontend/src/components/BuyNowButton.tsx",
           "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ArtistDashboard.tsx"
+          "frontend/src/pages/PaymentSuccess.tsx"
         ]
       },
       {
-        "id": "REQ-24",
-        "summary": "Create a public artist store page that displays an individual artist's products and donations with their customized store branding and settings",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/ArtistStorePage.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/ArtistStorePage.tsx",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-25",
-        "summary": "Add navigation from product cards in the main marketplace to individual artist store pages so buyers can explore all items from a specific artist",
+        "id": "REQ-43",
+        "summary": "Add validation to the product checkout flow that prevents purchase if either the artist or admin has not configured their Stripe payment details, displaying a clear error message to the buyer",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/BuyNowButton.tsx",
           "frontend/src/components/DonationCard.tsx"
         ],
         "matchedFiles": [
           "frontend/src/components/ProductCard.tsx",
+          "frontend/src/components/BuyNowButton.tsx",
           "frontend/src/components/DonationCard.tsx"
         ]
       }
@@ -108,21 +100,19 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/store-banner-placeholder.dim_1200x300.png",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/BulkImageUpload.tsx",
+    "frontend/src/components/AdminStripeAccountSetup.tsx",
+    "frontend/src/components/BuyNowButton.tsx",
     "frontend/src/components/DonationCard.tsx",
-    "frontend/src/components/DonationForm.tsx",
+    "frontend/src/components/PaymentMethodSetup.tsx",
     "frontend/src/components/ProductCard.tsx",
-    "frontend/src/components/StoreSettingsForm.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/AdminDashboard.tsx",
     "frontend/src/pages/ArtistDashboard.tsx",
-    "frontend/src/pages/ArtistStorePage.tsx",
-    "frontend/src/pages/ProductListing.tsx",
+    "frontend/src/pages/PaymentSuccess.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

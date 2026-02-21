@@ -1,68 +1,37 @@
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
-import Stripe "stripe/stripe";
 
 module {
-  type ProductType = { #product; #donation };
-
-  type OldProduct = {
-    id : Text;
-    artistId : Text;
-    price : Nat;
-    name : Text;
-    description : Text;
-    categoryName : Text;
-  };
-
-  type ArtistProfile = {
-    id : Text;
+  type OldUserProfile = {
     name : Text;
     email : Text;
-    isActive : Bool;
-    stripeAccountId : ?Text;
+    bio : ?Text;
   };
 
   type OldActor = {
-    userProfiles : Map.Map<Principal, { name : Text; email : Text; bio : ?Text }>;
-    artists : Map.Map<Text, ArtistProfile>;
-    artistPrincipals : Map.Map<Principal, Text>;
-    products : Map.Map<Text, OldProduct>;
-    platformCommission : Nat;
-    configuration : ?Stripe.StripeConfiguration;
+    userProfiles : Map.Map<Principal, OldUserProfile>;
   };
 
-  type NewProduct = {
-    id : Text;
-    artistId : Text;
-    price : Nat;
+  type NewUserProfile = {
     name : Text;
-    description : Text;
-    categoryName : Text;
-    productType : ProductType;
+    email : Text;
+    bio : ?Text;
+    stripeApiKey : ?Text;
   };
 
   type NewActor = {
-    userProfiles : Map.Map<Principal, { name : Text; email : Text; bio : ?Text }>;
-    artists : Map.Map<Text, ArtistProfile>;
-    artistPrincipals : Map.Map<Principal, Text>;
-    products : Map.Map<Text, NewProduct>;
-    platformCommission : Nat;
-    stripeConfiguration : ?Stripe.StripeConfiguration;
-    checkoutSessions : Map.Map<Text, Principal>;
+    userProfiles : Map.Map<Principal, NewUserProfile>;
   };
 
   public func run(old : OldActor) : NewActor {
-    let newProducts = old.products.map<Text, OldProduct, NewProduct>(
-      func(_id, product) {
-        { product with productType = #product };
+    let userProfiles = old.userProfiles.map<Principal, OldUserProfile, NewUserProfile>(
+      func(_id, profile) {
+        {
+          profile with
+          stripeApiKey = null;
+        };
       }
     );
-    {
-      old with
-      products = newProducts;
-      stripeConfiguration = old.configuration;
-      checkoutSessions = Map.empty<Text, Principal>();
-    };
+    { old with userProfiles };
   };
 };

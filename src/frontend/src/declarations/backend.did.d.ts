@@ -21,11 +21,13 @@ export type ExternalBlob = Uint8Array;
 export interface Product {
   'id' : string,
   'categoryName' : string,
+  'imageUrls' : Array<string>,
   'name' : string,
   'artistId' : string,
   'description' : string,
   'productType' : ProductType,
   'price' : bigint,
+  'videoUrl' : [] | [string],
 }
 export type ProductType = { 'donation' : null } |
   { 'product' : null };
@@ -68,6 +70,7 @@ export interface TransformationOutput {
 }
 export interface UserProfile {
   'bio' : [] | [string],
+  'stripeApiKey' : [] | [string],
   'name' : string,
   'email' : string,
 }
@@ -118,6 +121,7 @@ export interface _SERVICE {
   'deleteProduct' : ActorMethod<[string], undefined>,
   'getAllArtists' : ActorMethod<[], Array<ArtistProfile>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,
+  'getAllProductsForArtist' : ActorMethod<[string], Array<Product>>,
   'getArtist' : ActorMethod<[string], [] | [ArtistProfile]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -129,8 +133,13 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
+  'processSplitPayment' : ActorMethod<
+    [ShoppingItem, string, Principal],
+    undefined
+  >,
   'registerArtist' : ActorMethod<[ArtistProfile], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setAdminStripeAccountId' : ActorMethod<[string], undefined>,
   'setPlatformCommissionRate' : ActorMethod<[bigint], undefined>,
   'setStripeConfiguration' : ActorMethod<[StripeConfiguration], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 9,
+  "projectStateVersion": 13,
   "summary": "Artisan Hub Marketplace - Online marketplace for creatives to showcase and sell original work (3D prints, ceramics, paintings, music, videos). Features artist profiles with Stripe Connect integration, multi-photo upload, AI-generated descriptions, secure payments with 90% artist revenue share (10% admin commission), admin dashboard, and support for donations, job offerings, and gigs.",
   "architectural_notes": [
     "Stripe Connect for artist payment accounts - payments go directly to artist with 10% commission to admin",
@@ -9,11 +9,13 @@
     "Focus on artist onboarding and Stripe integration as primary flow",
     "Multi-photo upload allows custom category names per upload (artist-defined)",
     "AI-generated descriptions are editable by artists at any time",
-    "Revenue share percentages (90%/10%) should only be visible in admin dashboard and artist private dashboards, not on any public-facing pages"
+    "Revenue share percentages (90%/10%) should only be visible in admin dashboard and artist private dashboards, not on any public-facing pages",
+    "Product listings should support image galleries with preview/display during posting and editing",
+    "Video and audio recordings should be uploadable and playable within product listings",
+    "Split payment system supports dual artist payment configuration: direct Stripe API key OR Stripe Connect"
   ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Artist store banner placeholder image with abstract artistic pattern for store customization (store-banner-placeholder.dim_1200x300.png)",
   "existing_features": [
     {
       "id": "feature-create-admin-dashboard-with-branding-and-site-configuration-settings-including-site-name-logo-upload-color-scheme-customization-and-tagline",
@@ -166,6 +168,110 @@
         "REQ-25"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-image-carousel-display-to-productcard-component-in-frontend-src-components-productcard-tsx-that-shows-multiple-product-images-with-navigation-controls",
+      "title": "Add image carousel display to ProductCard component in frontend/src/components/ProductCard.tsx that shows multiple product images with navigation controls",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-video-player-component-to-productcard-that-displays-and-plays-product-videos-when-videourl-is-present-with-standard-playback-controls",
+      "title": "Add video player component to ProductCard that displays and plays product videos when videoUrl is present, with standard playback controls",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-product-creation-form-in-artistdashboard-to-include-multiple-image-upload-inputs-that-store-asset-urls-in-the-imageurls-array-field",
+      "title": "Update the product creation form in ArtistDashboard to include multiple image upload inputs that store asset URLs in the imageUrls array field",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-product-creation-form-in-artistdashboard-to-include-video-upload-input-that-stores-the-asset-url-in-the-videourl-field",
+      "title": "Update the product creation form in ArtistDashboard to include video upload input that stores the asset URL in the videoUrl field",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-product-editing-form-in-artistdashboard-to-display-existing-product-images-in-an-editable-carousel-where-artists-can-add-new-images-remove-existing-images-and-reorder-them",
+      "title": "Update the product editing form in ArtistDashboard to display existing product images in an editable carousel where artists can add new images, remove existing images, and reorder them",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-product-editing-form-in-artistdashboard-to-display-existing-product-video-with-playback-preview-and-allow-replacing-or-removing-the-video",
+      "title": "Update the product editing form in ArtistDashboard to display existing product video with playback preview and allow replacing or removing the video",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-bulkimageupload-component-to-store-each-uploaded-image-as-a-product-with-its-image-url-in-the-imageurls-array-field",
+      "title": "Update BulkImageUpload component to store each uploaded image as a product with its image URL in the imageUrls array field",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-product-images-in-an-image-gallery-on-the-artiststorepage-for-each-product-listing",
+      "title": "Display product images in an image gallery on the ArtistStorePage for each product listing",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-product-videos-with-playback-controls-on-the-artiststorepage-for-products-that-have-video-content",
+      "title": "Display product videos with playback controls on the ArtistStorePage for products that have video content",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-payment-configuration-section-to-the-artistdashboard-page-in-frontend-src-pages-artistdashboard-tsx-with-a-form-allowing-artists-to-either-provide-a-stripe-api-key-directly-or-use-stripe-connect-onboarding",
+      "title": "Add payment configuration section to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx with a form allowing artists to either provide a Stripe API key directly or use Stripe Connect onboarding",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-stripe-account-configuration-form-to-the-admindashboard-page-in-frontend-src-pages-admindashboard-tsx-where-platform-admin-can-input-and-save-their-stripe-account-id-to-receive-commission-payments",
+      "title": "Add Stripe account configuration form to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx where platform admin can input and save their Stripe account ID to receive commission payments",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-buynowbutton-component-in-frontend-src-components-buynowbutton-tsx-to-trigger-the-processsplitpayment-backend-function-after-successful-stripe-checkout-completion-ensuring-automatic-payment-distribution-occurs",
+      "title": "Update the BuyNowButton component in frontend/src/components/BuyNowButton.tsx to trigger the processSplitPayment backend function after successful Stripe checkout completion, ensuring automatic payment distribution occurs",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-validation-to-the-product-checkout-flow-that-prevents-purchase-if-either-the-artist-or-admin-has-not-configured-their-stripe-payment-details-displaying-a-clear-error-message-to-the-buyer",
+      "title": "Add validation to the product checkout flow that prevents purchase if either the artist or admin has not configured their Stripe payment details, displaying a clear error message to the buyer",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -274,6 +380,76 @@
       "summary": "Update the Product data model in the backend to include a productType field that distinguishes between 'product' and 'donation' types",
       "reqIds": [
         "REQ-20"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Display and playback support for product images when posting and editing products",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Support for video/recording upload, display, and playback when posting and editing products",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Update the Product data model in backend/main.mo to include an imageUrls field of type [Text] that stores an array of image asset URLs for each product",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Update the Product data model in backend/main.mo to include a videoUrl field of type ?Text that stores an optional video asset URL for each product",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Add dual payment configuration options for artists - allow providing Stripe API key directly in artist settings OR using Stripe Connect (extend existing Stripe Connect implementation)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Add Stripe account configuration settings to admin dashboard where platform admin can configure their payment details to receive commission",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Implement automatic split payment logic so that when a purchase is completed, the system automatically splits the payment - sending the platform commission to admin's Stripe account and the artist's share to their configured Stripe account",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Add a stripeApiKey optional field of type ?Text to the UserProfile data model in backend/main.mo to store artists' Stripe secret keys for direct payment configuration",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Add adminStripeAccountId field of type ?Text to backend storage in backend/main.mo to store the platform admin's Stripe account identifier for receiving commission payments",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Implement backend function in backend/main.mo named processSplitPayment that calculates the commission split based on the configured commission rate, and coordinates payment distribution to both admin and artist Stripe accounts",
+      "reqIds": [
+        "REQ-41"
       ],
       "status": "pending"
     }

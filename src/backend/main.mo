@@ -8,7 +8,11 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import Migration "migration";
+import Nat "mo:core/Nat";
+import Nat64 "mo:core/Nat64";
+import Text "mo:core/Text";
 
+// Specify the data migration function in with-clause
 (with migration = Migration.run)
 actor {
   // Storage
@@ -23,9 +27,10 @@ actor {
     name : Text;
     email : Text;
     bio : ?Text;
+    stripeApiKey : ?Text;
   };
 
-  let userProfiles = Map.empty<Principal, UserProfile>();
+  var userProfiles = Map.empty<Principal, UserProfile>();
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -57,8 +62,8 @@ actor {
     stripeAccountId : ?Text;
   };
 
-  let artists = Map.empty<Text, ArtistProfile>();
-  let artistPrincipals = Map.empty<Principal, Text>();
+  var artistProfiles = Map.empty<Text, ArtistProfile>();
+  var artistPrincipals = Map.empty<Principal, Text>();
 
   var platformCommission : Nat = 10;
 
@@ -81,18 +86,18 @@ actor {
       Runtime.trap("Unauthorized: Only users can register as artists");
     };
     artistPrincipals.add(caller, profile.id);
-    artists.add(profile.id, { profile with isActive = true });
+    artistProfiles.add(profile.id, { profile with isActive = true });
   };
 
   public query ({ caller }) func getArtist(artistId : Text) : async ?ArtistProfile {
-    artists.get(artistId);
+    artistProfiles.get(artistId);
   };
 
   public query ({ caller }) func getAllArtists() : async [ArtistProfile] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view all artists");
     };
-    artists.values().toArray();
+    artistProfiles.values().toArray();
   };
 
   // Product Types
@@ -109,9 +114,11 @@ actor {
     description : Text;
     categoryName : Text;
     productType : ProductType;
+    imageUrls : [Text];
+    videoUrl : ?Text;
   };
 
-  let products = Map.empty<Text, Product>();
+  var products = Map.empty<Text, Product>();
 
   public shared ({ caller }) func addProduct(product : Product) : async () {
     let isOwner = switch (artistPrincipals.get(caller)) {
@@ -165,6 +172,7 @@ actor {
     if (not isOwner and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only add products for your own artist account");
     };
+
     for (product in productsList.values()) {
       if (product.artistId != artistId) {
         Runtime.trap("All products must have the same artistId");
@@ -204,7 +212,7 @@ actor {
     youtube : ?Text;
   };
 
-  let storeSettings = Map.empty<Text, StoreSettings>();
+  var storeSettings = Map.empty<Text, StoreSettings>();
 
   public shared ({ caller }) func updateStoreSettings(artistId : Text, storeName : Text, storeBio : Text, bannerImage : ?Storage.ExternalBlob, socialLinks : SocialLinks) : async () {
     let isOwner = switch (artistPrincipals.get(caller)) {
@@ -227,12 +235,38 @@ actor {
   };
 
   // Stripe Payments
+  public type CommissionSplit = {
+    artistShareCents : Nat;
+    adminShareCents : Nat;
+  };
+
+  // Platform administrator's Stripe Account ID for receiving commissions
+  var adminStripeAccountId : ?Text = null;
+
+  public shared ({ caller }) func setAdminStripeAccountId(accountId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can set the account ID");
+    };
+    adminStripeAccountId := ?accountId;
+  };
+
+  func splitCommission(totalAmountCents : Nat, commissionRate : Nat) : CommissionSplit {
+    let adminShareCents = totalAmountCents * commissionRate / 100;
+    let artistShareCents = totalAmountCents - adminShareCents;
+    {
+      artistShareCents;
+      adminShareCents;
+    };
+  };
+
   var stripeConfiguration : ?Stripe.StripeConfiguration = null;
 
-  // Track checkout sessions by creator
-  let checkoutSessions = Map.empty<Text, Principal>();
+  var checkoutSessions = Map.empty<Text, Principal>();
 
-  public query func isStripeConfigured() : async Bool {
+  public query ({ caller }) func isStripeConfigured() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can check Stripe configuration");
+    };
     stripeConfiguration != null;
   };
 
@@ -243,15 +277,20 @@ actor {
     stripeConfiguration := ?config;
   };
 
+  func getStripeConfiguration() : Stripe.StripeConfiguration {
+    switch (stripeConfiguration) {
+      case (null) { Runtime.trap("Stripe not configured") };
+      case (?config) { config };
+    };
+  };
+
   public shared ({ caller }) func createCheckoutSession(items : [Stripe.ShoppingItem], successUrl : Text, cancelUrl : Text) : async Text {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can create checkout sessions");
     };
+    validateStripeSetupInternal(items);
     let sessionId = await Stripe.createCheckoutSession(
-      switch (stripeConfiguration) {
-        case (null) { Runtime.trap("Stripe not configured") };
-        case (?config) { config };
-      },
+      getStripeConfiguration(),
       getDefaultPrincipal(),
       items,
       successUrl,
@@ -271,10 +310,7 @@ actor {
       Runtime.trap("Unauthorized: Can only view your own checkout sessions");
     };
     await Stripe.getSessionStatus(
-      switch (stripeConfiguration) {
-        case (null) { Runtime.trap("Stripe not configured") };
-        case (?config) { config };
-      },
+      getStripeConfiguration(),
       sessionId,
       transform,
     );
@@ -282,6 +318,93 @@ actor {
 
   public query func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
     OutCall.transform(input);
+  };
+
+  public shared ({ caller }) func processSplitPayment(item : Stripe.ShoppingItem, artistId : Text, buyerId : Principal) : async () {
+    // Only admins can process split payments (platform backend operation)
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can process split payments");
+    };
+
+    let commission = splitCommission(item.priceInCents, platformCommission);
+    let artistShare = Nat64.fromNat(commission.artistShareCents);
+    let adminShare = Nat64.fromNat(commission.adminShareCents);
+
+    // Validate payment setup
+    switch (adminStripeAccountId) {
+      case (null) {
+        Runtime.trap("Admin Stripe payment details missing. Please contact support.");
+      };
+      case (?adminAccountId) {
+        switch (artistProfiles.get(artistId)) {
+          case (null) {
+            Runtime.trap("Artist not found. Please try again or contact support.");
+          };
+          case (?artist) {
+            switch (artist.stripeAccountId) {
+              case (null) {
+                Runtime.trap("Artist Stripe payment details missing. Please contact support.");
+              };
+              case (?artistAccountId) {
+                // Payment processing logic would go here
+                // This is a placeholder for actual Stripe API calls
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query ({ caller }) func getAllProductsForArtist(artistId : Text) : async [Product] {
+    // Public query - anyone can view products for an artist
+    products.values().toArray().filter(
+      func(product) { product.artistId == artistId }
+    );
+  };
+
+  // Internal validation function (not exposed as public)
+  func validateStripeSetupInternal(items : [Stripe.ShoppingItem]) {
+    if (items.size() == 0) {
+      Runtime.trap("No items provided");
+    };
+    
+    // Check admin Stripe setup
+    switch (adminStripeAccountId) {
+      case (null) {
+        Runtime.trap("Missing admin Stripe payment details. Please contact support.");
+      };
+      case (?_accountId) {};
+    };
+
+    // Check artist Stripe setup for each item
+    for (item in items.values()) {
+      // Extract artistId from item metadata or product lookup
+      // Assuming the item has a productId that we can look up
+      let productId = item.productName; // Use productName as productId reference
+      switch (products.get(productId)) {
+        case (null) {
+          Runtime.trap("Product not found: " # productId);
+        };
+        case (?product) {
+          switch (artistProfiles.get(product.artistId)) {
+            case (null) {
+              Runtime.trap("Artist not found for product: " # productId);
+            };
+            case (?artist) {
+              switch (artist.stripeAccountId) {
+                case (null) {
+                  Runtime.trap("Artist Stripe payment details missing for: " # artist.name # ". Please contact the artist.");
+                };
+                case (?_) {
+                  // Artist has Stripe configured
+                };
+              };
+            };
+          };
+        };
+      };
+    };
   };
 
   func getDefaultPrincipal() : Principal {

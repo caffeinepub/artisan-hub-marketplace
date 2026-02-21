@@ -3,7 +3,7 @@ import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ExternalBlob, ProductType } from '../backend';
+import { ExternalBlob, ProductType, Product } from '../backend';
 import { useBulkUploadProducts } from '../hooks/useQueries';
 
 interface UploadFile {
@@ -65,23 +65,20 @@ export default function BulkImageUpload({ artistId, onSuccess }: BulkImageUpload
         });
 
         await blob.getBytes();
+        const imageUrl = blob.getDirectURL();
 
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === fileItem.id ? { ...f, status: 'success' as const, blob, progress: 100 } : f
+            f.id === fileItem.id ? { ...f, status: 'success' as const, blob } : f
           )
         );
 
-        return { id: fileItem.id, blob, fileName: fileItem.file.name };
+        return imageUrl;
       } catch (error) {
         setFiles((prev) =>
           prev.map((f) =>
             f.id === fileItem.id
-              ? {
-                  ...f,
-                  status: 'error' as const,
-                  error: error instanceof Error ? error.message : 'Upload failed',
-                }
+              ? { ...f, status: 'error' as const, error: 'Upload failed' }
               : f
           )
         );
@@ -89,121 +86,128 @@ export default function BulkImageUpload({ artistId, onSuccess }: BulkImageUpload
       }
     });
 
-    const uploadResults = await Promise.all(uploadPromises);
-    const successfulUploads = uploadResults.filter((r) => r !== null);
+    const imageUrls = await Promise.all(uploadPromises);
+    const successfulUrls = imageUrls.filter((url): url is string => url !== null);
 
-    if (successfulUploads.length === 0) {
-      setIsUploading(false);
-      return;
+    // Create products with uploaded images
+    if (successfulUrls.length > 0) {
+      try {
+        const products: Product[] = successfulUrls.map((imageUrl, index) => ({
+          id: `product-${Date.now()}-${index}`,
+          artistId,
+          name: `Product ${index + 1}`,
+          description: 'Add description',
+          price: BigInt(1000), // $10.00 default
+          categoryName: 'Uncategorized',
+          productType: ProductType.product,
+          imageUrls: [imageUrl],
+          videoUrl: undefined,
+        }));
+
+        await bulkUpload.mutateAsync(products);
+        setFiles([]);
+        onSuccess?.();
+      } catch (error) {
+        console.error('Failed to create products:', error);
+      }
     }
 
-    // Create products from successful uploads
-    try {
-      const products = successfulUploads.map((upload) => ({
-        id: upload!.id,
-        artistId,
-        name: upload!.fileName.replace(/\.[^/.]+$/, ''),
-        description: 'Product description',
-        price: BigInt(1000),
-        categoryName: 'Uncategorized',
-        productType: ProductType.product,
-      }));
-
-      await bulkUpload.mutateAsync(products);
-
-      setFiles([]);
-      onSuccess?.();
-    } catch (error) {
-      console.error('Failed to create products:', error);
-    } finally {
-      setIsUploading(false);
-    }
+    setIsUploading(false);
   };
 
-  const pendingCount = files.filter((f) => f.status === 'pending').length;
-  const successCount = files.filter((f) => f.status === 'success').length;
-  const errorCount = files.filter((f) => f.status === 'error').length;
+  const allSuccess = files.length > 0 && files.every((f) => f.status === 'success');
+  const hasErrors = files.some((f) => f.status === 'error');
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Bulk Image Upload</CardTitle>
         <CardDescription>
-          Upload multiple images at once. Each image will create a new product listing that you can
-          edit afterwards.
+          Upload multiple images at once. Each image will create a new product listing.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
-          <Button asChild variant="outline" disabled={isUploading}>
-            <label className="cursor-pointer">
-              <Upload className="mr-2 h-4 w-4" />
-              Select Images
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                disabled={isUploading}
-              />
-            </label>
-          </Button>
+          <label htmlFor="bulk-upload" className="cursor-pointer">
+            <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+              <Upload className="h-4 w-4" />
+              <span>Select Images</span>
+            </div>
+            <input
+              id="bulk-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+              disabled={isUploading}
+            />
+          </label>
 
           {files.length > 0 && (
-            <Button onClick={uploadFiles} disabled={isUploading || pendingCount === 0}>
-              {isUploading ? 'Uploading...' : `Upload ${pendingCount} Image${pendingCount !== 1 ? 's' : ''}`}
+            <Button
+              onClick={uploadFiles}
+              disabled={isUploading || allSuccess}
+            >
+              {isUploading ? 'Uploading...' : allSuccess ? 'Uploaded' : `Upload ${files.length} Images`}
             </Button>
           )}
         </div>
 
         {files.length > 0 && (
           <div className="space-y-2">
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <span>Total: {files.length}</span>
-              {successCount > 0 && <span className="text-green-600">Success: {successCount}</span>}
-              {errorCount > 0 && <span className="text-destructive">Failed: {errorCount}</span>}
-            </div>
+            {files.map((file) => (
+              <div
+                key={file.id}
+                className="flex items-center gap-3 p-3 border rounded-lg"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{file.file.name}</p>
+                  {file.status === 'uploading' && (
+                    <Progress value={file.progress} className="mt-2" />
+                  )}
+                  {file.status === 'error' && (
+                    <p className="text-sm text-destructive mt-1">{file.error}</p>
+                  )}
+                </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {files.map((fileItem) => (
-                <div
-                  key={fileItem.id}
-                  className="flex items-center gap-3 p-3 border rounded-lg bg-card"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium truncate">{fileItem.file.name}</p>
-                      {fileItem.status === 'success' && (
-                        <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      )}
-                      {fileItem.status === 'error' && (
-                        <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
-                      )}
-                    </div>
-
-                    {fileItem.status === 'uploading' && (
-                      <Progress value={fileItem.progress} className="h-2" />
-                    )}
-
-                    {fileItem.status === 'error' && (
-                      <p className="text-xs text-destructive">{fileItem.error}</p>
-                    )}
-                  </div>
-
-                  {fileItem.status === 'pending' && (
+                <div className="flex items-center gap-2">
+                  {file.status === 'success' && (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  )}
+                  {file.status === 'error' && (
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                  )}
+                  {file.status === 'pending' && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => removeFile(fileItem.id)}
-                      disabled={isUploading}
+                      onClick={() => removeFile(file.id)}
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {allSuccess && (
+          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-lg">
+            <CheckCircle className="h-5 w-5" />
+            <p className="text-sm">
+              All images uploaded successfully! Products have been created.
+            </p>
+          </div>
+        )}
+
+        {hasErrors && (
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg">
+            <AlertCircle className="h-5 w-5" />
+            <p className="text-sm">
+              Some uploads failed. Please try again.
+            </p>
           </div>
         )}
       </CardContent>

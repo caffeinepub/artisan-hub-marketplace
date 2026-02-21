@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import StripeSetup from '../components/StripeSetup';
 import CommissionSettings from '../components/CommissionSettings';
+import AdminStripeAccountSetup from '../components/AdminStripeAccountSetup';
 
 export default function AdminDashboard() {
   const { data: userRole, isLoading: roleLoading } = useGetCallerUserRole();
@@ -72,6 +73,11 @@ export default function AdminDashboard() {
             <CommissionSettings />
           </CardContent>
         </Card>
+      </div>
+
+      {/* Admin Stripe Account Setup */}
+      <div className="mt-6">
+        <AdminStripeAccountSetup />
       </div>
     </div>
   );

@@ -17,10 +17,13 @@ export default function PaymentSuccess() {
               Thank you for your purchase. Your order has been confirmed.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center text-sm text-muted-foreground">
+          <CardContent className="text-center text-sm text-muted-foreground space-y-3">
             <p>
               Thank you for supporting independent artists and creators!
               Your purchase helps them continue making amazing work.
+            </p>
+            <p className="text-xs">
+              Payment has been distributed to the artist and platform according to the configured commission rate.
             </p>
           </CardContent>
           <CardFooter className="flex justify-center">

@@ -26,11 +26,13 @@ export const ProductType = IDL.Variant({
 export const Product = IDL.Record({
   'id' : IDL.Text,
   'categoryName' : IDL.Text,
+  'imageUrls' : IDL.Vec(IDL.Text),
   'name' : IDL.Text,
   'artistId' : IDL.Text,
   'description' : IDL.Text,
   'productType' : ProductType,
   'price' : IDL.Nat,
+  'videoUrl' : IDL.Opt(IDL.Text),
 });
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
@@ -53,6 +55,7 @@ export const ArtistProfile = IDL.Record({
 });
 export const UserProfile = IDL.Record({
   'bio' : IDL.Opt(IDL.Text),
+  'stripeApiKey' : IDL.Opt(IDL.Text),
   'name' : IDL.Text,
   'email' : IDL.Text,
 });
@@ -139,6 +142,11 @@ export const idlService = IDL.Service({
   'deleteProduct' : IDL.Func([IDL.Text], [], []),
   'getAllArtists' : IDL.Func([], [IDL.Vec(ArtistProfile)], ['query']),
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
+  'getAllProductsForArtist' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(Product)],
+      ['query'],
+    ),
   'getArtist' : IDL.Func([IDL.Text], [IDL.Opt(ArtistProfile)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -158,8 +166,14 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
+  'processSplitPayment' : IDL.Func(
+      [ShoppingItem, IDL.Text, IDL.Principal],
+      [],
+      [],
+    ),
   'registerArtist' : IDL.Func([ArtistProfile], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setAdminStripeAccountId' : IDL.Func([IDL.Text], [], []),
   'setPlatformCommissionRate' : IDL.Func([IDL.Nat], [], []),
   'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
   'transform' : IDL.Func(
@@ -196,11 +210,13 @@ export const idlFactory = ({ IDL }) => {
   const Product = IDL.Record({
     'id' : IDL.Text,
     'categoryName' : IDL.Text,
+    'imageUrls' : IDL.Vec(IDL.Text),
     'name' : IDL.Text,
     'artistId' : IDL.Text,
     'description' : IDL.Text,
     'productType' : ProductType,
     'price' : IDL.Nat,
+    'videoUrl' : IDL.Opt(IDL.Text),
   });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
@@ -223,6 +239,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserProfile = IDL.Record({
     'bio' : IDL.Opt(IDL.Text),
+    'stripeApiKey' : IDL.Opt(IDL.Text),
     'name' : IDL.Text,
     'email' : IDL.Text,
   });
@@ -306,6 +323,11 @@ export const idlFactory = ({ IDL }) => {
     'deleteProduct' : IDL.Func([IDL.Text], [], []),
     'getAllArtists' : IDL.Func([], [IDL.Vec(ArtistProfile)], ['query']),
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
+    'getAllProductsForArtist' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(Product)],
+        ['query'],
+      ),
     'getArtist' : IDL.Func([IDL.Text], [IDL.Opt(ArtistProfile)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -325,8 +347,14 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
+    'processSplitPayment' : IDL.Func(
+        [ShoppingItem, IDL.Text, IDL.Principal],
+        [],
+        [],
+      ),
     'registerArtist' : IDL.Func([ArtistProfile], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setAdminStripeAccountId' : IDL.Func([IDL.Text], [], []),
     'setPlatformCommissionRate' : IDL.Func([IDL.Nat], [], []),
     'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
     'transform' : IDL.Func(

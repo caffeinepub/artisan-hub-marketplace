@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, AlertCircle } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -14,8 +15,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Product } from '../backend';
-import { useGetArtist } from '../hooks/useQueries';
+import { useGetArtist, useGetAdminStripeAccountId } from '../hooks/useQueries';
 import { useCreateCheckoutSession } from '../hooks/useCreateCheckoutSession';
+import { useGetCallerUserProfile } from '../hooks/useQueries';
+import { toast } from 'sonner';
 
 interface DonationCardProps {
   donation: Product;
@@ -25,15 +28,33 @@ export default function DonationCard({ donation }: DonationCardProps) {
   const [open, setOpen] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
   const { data: artist } = useGetArtist(donation.artistId);
+  const { data: adminAccountId } = useGetAdminStripeAccountId();
+  const { data: userProfile } = useGetCallerUserProfile();
   const createCheckoutSession = useCreateCheckoutSession();
 
   const suggestedAmount = Number(donation.price) / 100;
 
+  // Check payment configuration
+  const hasArtistPayment = !!artist?.stripeAccountId || !!userProfile?.stripeApiKey;
+  const hasAdminPayment = !!adminAccountId;
+  const isPaymentConfigured = hasArtistPayment && hasAdminPayment;
+
   const handleDonate = async (amount?: number) => {
+    // Validate payment configuration
+    if (!hasAdminPayment) {
+      toast.error('Platform payment configuration is incomplete. Please contact support.');
+      return;
+    }
+
+    if (!hasArtistPayment) {
+      toast.error('Artist payment configuration is incomplete. Donations cannot be accepted at this time.');
+      return;
+    }
+
     try {
       const donationAmount = amount || parseFloat(customAmount);
       if (!donationAmount || donationAmount < 1) {
-        alert('Please enter a valid amount (minimum $1.00)');
+        toast.error('Please enter a valid amount (minimum $1.00)');
         return;
       }
 
@@ -51,7 +72,7 @@ export default function DonationCard({ donation }: DonationCardProps) {
       window.location.href = session.url;
     } catch (error) {
       console.error('Donation failed:', error);
-      alert('Failed to process donation. Please try again.');
+      toast.error('Failed to process donation. Please try again.');
     }
   };
 
@@ -64,7 +85,24 @@ export default function DonationCard({ donation }: DonationCardProps) {
               <Heart className="mr-1 h-3 w-3" />
               Donation
             </Badge>
-            <Badge variant="outline">{donation.categoryName}</Badge>
+            <div className="flex gap-1">
+              <Badge variant="outline">{donation.categoryName}</Badge>
+              {!isPaymentConfigured && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge variant="secondary" className="gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        Setup Pending
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">Payment configuration incomplete</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
           </div>
           <CardTitle className="text-xl">{donation.name}</CardTitle>
         </CardHeader>
@@ -89,14 +127,23 @@ export default function DonationCard({ donation }: DonationCardProps) {
             <p className="text-2xl font-bold">${suggestedAmount.toFixed(2)}</p>
           </div>
 
-          <Button onClick={() => handleDonate(suggestedAmount)} className="w-full" size="lg">
-            <Heart className="mr-2 h-4 w-4" />
-            Donate ${suggestedAmount.toFixed(2)}
-          </Button>
+          {isPaymentConfigured ? (
+            <>
+              <Button onClick={() => handleDonate(suggestedAmount)} className="w-full" size="lg">
+                <Heart className="mr-2 h-4 w-4" />
+                Donate ${suggestedAmount.toFixed(2)}
+              </Button>
 
-          <Button onClick={() => setOpen(true)} variant="outline" className="w-full">
-            Choose Custom Amount
-          </Button>
+              <Button onClick={() => setOpen(true)} variant="outline" className="w-full">
+                Choose Custom Amount
+              </Button>
+            </>
+          ) : (
+            <Button disabled className="w-full gap-2" variant="outline">
+              <AlertCircle className="h-4 w-4" />
+              Payment Setup Pending
+            </Button>
+          )}
         </CardFooter>
       </Card>
 

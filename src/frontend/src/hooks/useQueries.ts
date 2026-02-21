@@ -9,7 +9,9 @@ import type {
   SocialLinks,
   ExternalBlob,
   UserRole,
+  ShoppingItem,
 } from '../backend';
+import { Principal } from '@icp-sdk/core/principal';
 
 // User Profiles
 export function useGetCallerUserProfile() {
@@ -252,6 +254,98 @@ export function useSetStripeConfiguration() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stripeConfigured'] });
     },
+  });
+}
+
+// Admin Stripe Account
+export function useGetAdminStripeAccountId() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string | null>({
+    queryKey: ['adminStripeAccountId'],
+    queryFn: async () => {
+      if (!actor) return null;
+      // This will be retrieved from backend storage
+      // For now, return null as placeholder
+      return null;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetAdminStripeAccountId() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (accountId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.setAdminStripeAccountId(accountId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminStripeAccountId'] });
+    },
+  });
+}
+
+// Split Payment Processing
+export function useProcessSplitPayment() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async ({
+      item,
+      artistId,
+      buyerId,
+    }: {
+      item: ShoppingItem;
+      artistId: string;
+      buyerId: Principal;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.processSplitPayment(item, artistId, buyerId);
+    },
+  });
+}
+
+// Payment Setup Validation
+export function useValidatePaymentSetup(artistId: string) {
+  const { actor, isFetching } = useActor();
+  const { data: artist } = useGetArtist(artistId);
+  const { data: adminAccountId } = useGetAdminStripeAccountId();
+
+  return useQuery<{ isValid: boolean; message?: string }>({
+    queryKey: ['paymentSetupValidation', artistId],
+    queryFn: async () => {
+      if (!actor) return { isValid: false, message: 'Actor not available' };
+
+      // Check admin payment setup
+      if (!adminAccountId) {
+        return {
+          isValid: false,
+          message: 'Platform payment configuration is incomplete. Please contact support.',
+        };
+      }
+
+      // Check artist payment setup
+      if (!artist) {
+        return { isValid: false, message: 'Artist not found' };
+      }
+
+      const hasStripeConnect = !!artist.stripeAccountId;
+      const userProfile = await actor.getUserProfile(Principal.fromText(artistId));
+      const hasApiKey = !!userProfile?.stripeApiKey;
+
+      if (!hasStripeConnect && !hasApiKey) {
+        return {
+          isValid: false,
+          message: 'Artist payment configuration is incomplete. Please contact the artist.',
+        };
+      }
+
+      return { isValid: true };
+    },
+    enabled: !!actor && !isFetching && !!artistId,
   });
 }
 

@@ -92,11 +92,13 @@ export class ExternalBlob {
 export interface Product {
     id: string;
     categoryName: string;
+    imageUrls: Array<string>;
     name: string;
     artistId: string;
     description: string;
     productType: ProductType;
     price: bigint;
+    videoUrl?: string;
 }
 export interface TransformationOutput {
     status: bigint;
@@ -172,6 +174,7 @@ export interface _CaffeineStorageRefillResult {
 }
 export interface UserProfile {
     bio?: string;
+    stripeApiKey?: string;
     name: string;
     email: string;
 }
@@ -199,6 +202,7 @@ export interface backendInterface {
     deleteProduct(productId: string): Promise<void>;
     getAllArtists(): Promise<Array<ArtistProfile>>;
     getAllProducts(): Promise<Array<Product>>;
+    getAllProductsForArtist(artistId: string): Promise<Array<Product>>;
     getArtist(artistId: string): Promise<ArtistProfile | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -210,8 +214,10 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
+    processSplitPayment(item: ShoppingItem, artistId: string, buyerId: Principal): Promise<void>;
     registerArtist(profile: ArtistProfile): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setAdminStripeAccountId(accountId: string): Promise<void>;
     setPlatformCommissionRate(newRate: bigint): Promise<void>;
     setStripeConfiguration(config: StripeConfiguration): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
@@ -417,6 +423,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n19(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getAllProductsForArtist(arg0: string): Promise<Array<Product>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllProductsForArtist(arg0);
+                return from_candid_vec_n19(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllProductsForArtist(arg0);
+            return from_candid_vec_n19(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getArtist(arg0: string): Promise<ArtistProfile | null> {
         if (this.processError) {
             try {
@@ -571,6 +591,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async processSplitPayment(arg0: ShoppingItem, arg1: string, arg2: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.processSplitPayment(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.processSplitPayment(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async registerArtist(arg0: ArtistProfile): Promise<void> {
         if (this.processError) {
             try {
@@ -596,6 +630,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n43(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async setAdminStripeAccountId(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setAdminStripeAccountId(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setAdminStripeAccountId(arg0);
             return result;
         }
     }
@@ -748,41 +796,50 @@ function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uin
 function from_candid_record_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     categoryName: string;
+    imageUrls: Array<string>;
     name: string;
     artistId: string;
     description: string;
     productType: _ProductType;
     price: bigint;
+    videoUrl: [] | [string];
 }): {
     id: string;
     categoryName: string;
+    imageUrls: Array<string>;
     name: string;
     artistId: string;
     description: string;
     productType: ProductType;
     price: bigint;
+    videoUrl?: string;
 } {
     return {
         id: value.id,
         categoryName: value.categoryName,
+        imageUrls: value.imageUrls,
         name: value.name,
         artistId: value.artistId,
         description: value.description,
         productType: from_candid_ProductType_n22(_uploadFile, _downloadFile, value.productType),
-        price: value.price
+        price: value.price,
+        videoUrl: record_opt_to_undefined(from_candid_opt_n18(_uploadFile, _downloadFile, value.videoUrl))
     };
 }
 function from_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     bio: [] | [string];
+    stripeApiKey: [] | [string];
     name: string;
     email: string;
 }): {
     bio?: string;
+    stripeApiKey?: string;
     name: string;
     email: string;
 } {
     return {
         bio: record_opt_to_undefined(from_candid_opt_n18(_uploadFile, _downloadFile, value.bio)),
+        stripeApiKey: record_opt_to_undefined(from_candid_opt_n18(_uploadFile, _downloadFile, value.stripeApiKey)),
         name: value.name,
         email: value.email
     };
@@ -963,15 +1020,18 @@ function to_candid_record_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8
 }
 function to_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     bio?: string;
+    stripeApiKey?: string;
     name: string;
     email: string;
 }): {
     bio: [] | [string];
+    stripeApiKey: [] | [string];
     name: string;
     email: string;
 } {
     return {
         bio: value.bio ? candid_some(value.bio) : candid_none(),
+        stripeApiKey: value.stripeApiKey ? candid_some(value.stripeApiKey) : candid_none(),
         name: value.name,
         email: value.email
     };
@@ -1000,28 +1060,34 @@ function to_candid_record_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8
 function to_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     categoryName: string;
+    imageUrls: Array<string>;
     name: string;
     artistId: string;
     description: string;
     productType: ProductType;
     price: bigint;
+    videoUrl?: string;
 }): {
     id: string;
     categoryName: string;
+    imageUrls: Array<string>;
     name: string;
     artistId: string;
     description: string;
     productType: _ProductType;
     price: bigint;
+    videoUrl: [] | [string];
 } {
     return {
         id: value.id,
         categoryName: value.categoryName,
+        imageUrls: value.imageUrls,
         name: value.name,
         artistId: value.artistId,
         description: value.description,
         productType: to_candid_ProductType_n10(_uploadFile, _downloadFile, value.productType),
-        price: value.price
+        price: value.price,
+        videoUrl: value.videoUrl ? candid_some(value.videoUrl) : candid_none()
     };
 }
 function to_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ProductType): {

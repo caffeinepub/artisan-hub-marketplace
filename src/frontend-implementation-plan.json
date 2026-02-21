@@ -1,149 +1,116 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add bulk image upload, artist donations, and product store settings",
+  "title": "Implement split payment system with dual Stripe configuration options - Frontend",
   "requirements": [
     {
-      "id": "REQ-19",
-      "summary": "Add bulk image upload functionality allowing artists to select multiple images and auto-create product listings",
+      "id": "REQ-38",
+      "summary": "Add payment configuration section to artist dashboard allowing artists to provide Stripe API key or use Stripe Connect",
       "acceptanceCriteria": [
-        "Artist can select multiple image files in a single upload action",
-        "Each uploaded image automatically creates a new product listing",
-        "Each auto-created product has the image set as its primary photo",
-        "Artist can edit product details (name, description, price, category) after bulk creation",
-        "Upload progress is displayed for multiple files",
-        "Error handling shows which files failed to upload and why"
+        "Payment configuration section is visible in artist dashboard",
+        "Form displays current payment method status (Stripe Connect or API key)",
+        "Artists can input and save Stripe API key",
+        "Artists can initiate Stripe Connect onboarding flow",
+        "Clear indication of which payment method is currently active",
+        "Validation that at least one payment method is configured before artists can receive payments"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BulkImageUpload.tsx",
+          "path": "frontend/src/components/PaymentMethodSetup.tsx",
           "operation": "create",
-          "description": "Create a bulk image upload component that allows artists to select multiple files, shows upload progress for each file using ExternalBlob.withUploadProgress, and calls addProductsBulk backend capability after all images are uploaded. Use the blob-storage component to convert each file to ExternalBlob. Display individual file progress bars and error states. Verify the blob-storage component's usage instructions before implementing."
+          "description": "Create a new component that displays payment configuration options for artists. Include a form with radio button group to select between 'Stripe API Key' and 'Stripe Connect'. For API key option, provide a secure text input field with show/hide toggle. For Stripe Connect, display connection status and an 'Onboard with Stripe Connect' button. Show which method is currently active with visual indicators. Include validation that ensures at least one payment method is configured. Use the authorization component to verify the user is authenticated before displaying payment options."
+        },
+        {
+          "path": "frontend/src/pages/ArtistDashboard.tsx",
+          "operation": "modify",
+          "description": "Add a new 'Payment Setup' tab to the existing tabs (Products, Donations, Store Settings). Import and render the PaymentMethodSetup component within this tab. Position the Payment Setup tab between Store Settings and other tabs. Ensure the tab is accessible to authenticated artists only."
         },
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add useBulkUploadProducts mutation hook that accepts an array of Product objects and calls actor.addProductsBulk, invalidating the products query cache on success."
-        },
-        {
-          "path": "frontend/src/pages/ArtistDashboard.tsx",
-          "operation": "modify",
-          "description": "Import and integrate the BulkImageUpload component into the artist dashboard above the existing product management table. Wire the component to create Product objects with productType set to 'product' and default values for name, description, price, and categoryName that artists can edit later."
+          "description": "Add mutation hooks for saving and retrieving artist payment configuration. Create useSavePaymentMethod mutation that calls saveCallerUserProfile with the stripeApiKey field. Create useGetPaymentMethod query that retrieves the current user profile and extracts the stripeApiKey field. These hooks will support the PaymentMethodSetup component's data operations."
         }
       ]
     },
     {
-      "id": "REQ-21",
-      "summary": "Create donation creation flow allowing artists to set up donation options with customizable amounts and descriptions",
+      "id": "REQ-40",
+      "summary": "Add Stripe account configuration form to admin dashboard for platform commission payments",
       "acceptanceCriteria": [
-        "Artists can create donation listings separate from product listings",
-        "Donation form includes fields for title, description, and optional suggested amount",
-        "Donations appear in the artist's product management interface with a clear 'donation' indicator",
-        "Buyers can specify custom donation amounts at checkout"
+        "Admin Stripe configuration form is visible on AdminDashboard",
+        "Form displays current admin Stripe account ID if configured",
+        "Admin can input and update Stripe account ID",
+        "Form validation ensures valid account ID format",
+        "Success/error messages displayed on save"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/DonationForm.tsx",
+          "path": "frontend/src/components/AdminStripeAccountSetup.tsx",
           "operation": "create",
-          "description": "Create a donation creation form component with fields for title (name), description, suggested amount (price), and category. Include a clear header indicating this creates a donation. Set productType to 'donation' when calling addProduct backend capability. Include validation for required fields and price format."
+          "description": "Create a component for admin Stripe account configuration. Display a form with a text input for Stripe account ID (format: acct_XXXXXXXXXX). Show the current account ID if already configured, with option to update. Include format validation for Stripe account IDs. Display success toast on successful save and error toast on failure. Use the authorization component to ensure only admins can access this form."
         },
         {
-          "path": "frontend/src/components/DonationCard.tsx",
-          "operation": "create",
-          "description": "Create a donation card component that displays donation details (title, description, suggested amount) with visual styling distinct from ProductCard. Include a 'Support' or 'Donate' button that uses BuyNowButton logic but allows custom amount input before checkout."
-        },
-        {
-          "path": "frontend/src/pages/ArtistDashboard.tsx",
+          "path": "frontend/src/pages/AdminDashboard.tsx",
           "operation": "modify",
-          "description": "Add a tabbed interface or section toggle to switch between 'Products' and 'Donations' management. Display the DonationForm component in a modal or dedicated section. Filter displayed products by productType and show a 'donation' badge for donation items in the product table."
-        }
-      ]
-    },
-    {
-      "id": "REQ-22",
-      "summary": "Implement separate filtering and display sections for products and donations in the marketplace",
-      "acceptanceCriteria": [
-        "Marketplace displays products and donations in separate sections or tabs",
-        "Each section is clearly labeled ('Products' and 'Support Artists' or similar)",
-        "Donation cards visually distinguish themselves from product cards",
-        "Users can navigate between product listings and donation listings"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/ProductListing.tsx",
-          "operation": "modify",
-          "description": "Add tabbed navigation using shadcn/ui Tabs component to switch between 'Products' and 'Support Artists' sections. Filter products by productType field and render ProductCard components for products and DonationCard components for donations in their respective tabs. Import and use the DonationCard component."
-        }
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "summary": "Add store settings interface for artists to customize store presentation including name, bio, banner, and social links",
-      "acceptanceCriteria": [
-        "Artists can access store settings from their dashboard",
-        "Settings include store name, bio/description, banner image upload, and social media link fields",
-        "Changes are saved to the artist profile in the backend",
-        "Store customization is reflected on the artist's public store page"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/StoreSettingsForm.tsx",
-          "operation": "create",
-          "description": "Create a store settings form component with fields for store name, bio (textarea), banner image upload (using ExternalBlob from blob-storage component with upload progress), and social media links (Instagram, Facebook, Twitter, YouTube, TikTok). Load current settings using getStoreSettings backend capability and save using updateStoreSettings. Display the generated store banner placeholder image from frontend/public/assets/generated/store-banner-placeholder.dim_1200x300.png as a preview before upload. Use blob-storage component for banner image handling. Verify the blob-storage component's usage instructions before implementing."
+          "description": "Import and render the AdminStripeAccountSetup component below the existing StripeSetup component on the admin dashboard. Add a section heading 'Platform Payment Configuration' above the new component. Ensure proper spacing between the existing Stripe configuration and the new admin account setup."
         },
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add useGetStoreSettings query hook that fetches store settings for a given artistId using actor.getStoreSettings, and useUpdateStoreSettings mutation hook that calls actor.updateStoreSettings and invalidates the store settings cache."
-        },
-        {
-          "path": "frontend/src/pages/ArtistDashboard.tsx",
-          "operation": "modify",
-          "description": "Add a 'Store Settings' navigation tab or button in the artist dashboard that opens the StoreSettingsForm component in a modal or dedicated section. Fetch the current user's artist profile to get artistId for store settings operations."
+          "description": "Add useSetAdminStripeAccountId mutation hook that calls the backend setAdminStripeAccountId function. Add useGetAdminStripeAccountId query hook that retrieves the admin Stripe account ID from backend storage. These hooks will support the AdminStripeAccountSetup component's save and display functionality."
         }
       ]
     },
     {
-      "id": "REQ-24",
-      "summary": "Create public artist store page displaying artist's products and donations with customized branding",
+      "id": "REQ-42",
+      "summary": "Update BuyNowButton to trigger split payment processing after successful Stripe checkout",
       "acceptanceCriteria": [
-        "Each artist has a dedicated public store URL (e.g., /store/[artistId])",
-        "Store page displays artist's custom store name, bio, and banner image",
-        "All products and donations from that artist are displayed on their store page",
-        "Social media links are visible and clickable",
-        "Store page is accessible to all visitors without authentication"
+        "After successful Stripe checkout, split payment function is called",
+        "Loading state displayed during split payment processing",
+        "Success message shown when split payment completes successfully",
+        "Error handling and user feedback when split payment fails",
+        "Payment success page reflects that payment has been distributed"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ArtistStorePage.tsx",
-          "operation": "create",
-          "description": "Create a public artist store page component that accepts artistId as a route parameter. Fetch store settings using useGetStoreSettings and products using getProductsFiltered backend capability. Display banner image using ExternalBlob.getDirectURL(), store name, bio, and social media links as clickable icons. Render products and donations in separate sections using ProductCard and DonationCard components. Include loading and error states. This page should be accessible without authentication."
+          "path": "frontend/src/components/BuyNowButton.tsx",
+          "operation": "modify",
+          "description": "Add payment validation check before creating checkout session: verify that both artist and admin have payment configuration (check artist's stripeApiKey or stripeAccountId, and admin's adminStripeAccountId). If payment configuration is incomplete, display error toast and prevent checkout. After successful Stripe checkout completion (when returning from Stripe), trigger the backend processSplitPayment function with the product details, artist ID, and buyer principal. Add loading state management during split payment processing. Show success toast when split payment completes. Handle errors with user-friendly error messages and toast notifications."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Register a new route path '/store/$artistId' that renders the ArtistStorePage component. Use TanStack Router's route parameters to pass artistId to the page component."
+          "description": "Add useProcessSplitPayment mutation hook that calls the backend processSplitPayment function with ShoppingItem, artistId, and buyerId parameters. Add useValidatePaymentSetup query hook that checks if both artist and admin payment configurations are complete before allowing checkout. These hooks will support the BuyNowButton's split payment flow."
+        },
+        {
+          "path": "frontend/src/pages/PaymentSuccess.tsx",
+          "operation": "modify",
+          "description": "Add informational text below the success message indicating that payment has been distributed to the artist and platform. Include a brief explanation that the commission has been processed. Maintain the existing 'Continue Shopping' button and success icon."
         }
       ]
     },
     {
-      "id": "REQ-25",
-      "summary": "Add navigation from product cards to individual artist store pages",
+      "id": "REQ-43",
+      "summary": "Add validation to prevent purchase if payment configuration is incomplete",
       "acceptanceCriteria": [
-        "Product cards display clickable artist name or link",
-        "Clicking artist name navigates to that artist's dedicated store page",
-        "Artist store page loads with all products and donations from that artist"
+        "Checkout is blocked if payment configuration is incomplete",
+        "Clear error message displayed to buyer explaining the issue",
+        "Product card or buy button indicates when payment configuration is incomplete"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/ProductCard.tsx",
           "operation": "modify",
-          "description": "Fetch the artist profile using the product's artistId to display the artist's name. Make the artist name a clickable link that navigates to '/store/$artistId' using TanStack Router's Link component. Style the link to be visually distinct (e.g., underline on hover)."
+          "description": "Add payment configuration status check for the product's artist. If the artist or admin lacks payment configuration, display a badge or notice on the product card indicating 'Payment setup pending'. Disable or visually indicate the buy button when payment configuration is incomplete. Show tooltip or message explaining that the product cannot be purchased until the artist configures payment settings."
+        },
+        {
+          "path": "frontend/src/components/BuyNowButton.tsx",
+          "operation": "modify",
+          "description": "Add pre-purchase validation that checks payment configuration completeness before initiating checkout. If artist has neither stripeApiKey nor stripeAccountId, or if admin lacks adminStripeAccountId, display a clear error toast message: 'This product cannot be purchased at this time. Payment configuration is incomplete.' Disable the button when validation fails. This operation extends the modification from REQ-42."
         },
         {
           "path": "frontend/src/components/DonationCard.tsx",
           "operation": "modify",
-          "description": "Add artist name display by fetching the artist profile using the donation's artistId. Make the artist name a clickable link that navigates to '/store/$artistId' using TanStack Router's Link component. Style consistently with ProductCard."
+          "description": "Add payment configuration status check for the donation's artist. If the artist or admin lacks payment configuration, display a notice on the donation card indicating 'Payment setup pending'. Disable donation buttons when payment configuration is incomplete. Show message explaining that donations cannot be accepted until payment settings are configured."
         }
       ]
     }

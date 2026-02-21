@@ -1,159 +1,167 @@
 {
   "kind": "build_request",
-  "title": "Add bulk image upload, artist donations, and product store settings",
+  "title": "Implement split payment system with dual Stripe configuration options",
   "projectName": "Artisan Hub Marketplace",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-19",
-      "text": "Add bulk image upload functionality to the artist dashboard that allows artists to select multiple image files at once and automatically create a separate product listing for each uploaded image",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-user-bulk-upload"
-        ],
-        "quotes": [
-          "Bulk image upload (each image becomes an item)"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Artist can select multiple image files in a single upload action",
-        "Each uploaded image automatically creates a new product listing",
-        "Each auto-created product has the image set as its primary photo",
-        "Artist can edit product details (name, description, price, category) after bulk creation",
-        "Upload progress is displayed for multiple files",
-        "Error handling shows which files failed to upload and why"
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "text": "Update the Product data model in the backend to include a productType field that distinguishes between 'product' and 'donation' types",
+      "id": "REQ-37",
+      "text": "Add a stripeApiKey optional field of type ?Text to the UserProfile data model in backend/main.mo to store artists' Stripe secret keys for direct payment configuration",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-bulk-upload"
+          "msg-user-stripe-key-setup"
         ],
         "quotes": [
-          "Artist donations separate from product purchases"
+          "provide stripe key in settings or use of stripe connect, allow both options"
         ]
       },
       "acceptanceCriteria": [
-        "Product type has exactly two variants: 'product' and 'donation'",
-        "Existing products default to 'product' type during migration",
-        "Product type is stored and retrievable via backend queries"
+        "UserProfile type includes optional stripeApiKey field",
+        "Existing artist profiles are not affected by schema addition",
+        "Field is securely stored and only accessible to the profile owner and admin"
       ]
     },
     {
-      "id": "REQ-21",
-      "text": "Create a donation creation flow in the artist dashboard that allows artists to set up donation options with customizable amounts, descriptions, and optional suggested amounts",
+      "id": "REQ-38",
+      "text": "Add payment configuration section to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx with a form allowing artists to either provide a Stripe API key directly or use Stripe Connect onboarding",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-stripe-key-setup"
+        ],
+        "quotes": [
+          "create a stripe key setup in artist dashboard",
+          "provide stripe key in settings or use of stripe connect, allow both options"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Payment configuration section is visible in artist dashboard",
+        "Form displays current payment method status (Stripe Connect or API key)",
+        "Artists can input and save Stripe API key",
+        "Artists can initiate Stripe Connect onboarding flow",
+        "Clear indication of which payment method is currently active",
+        "Validation that at least one payment method is configured before artists can receive payments"
+      ]
+    },
+    {
+      "id": "REQ-39",
+      "text": "Add adminStripeAccountId field of type ?Text to backend storage in backend/main.mo to store the platform admin's Stripe account identifier for receiving commission payments",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-user-stripe-key-setup"
+        ],
+        "quotes": [
+          "in existing admin dashboard"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend storage includes adminStripeAccountId field",
+        "Field can be set and retrieved via backend function",
+        "Only users with admin role can access or modify this field"
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "text": "Add Stripe account configuration form to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx where platform admin can input and save their Stripe account ID to receive commission payments",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-stripe-key-setup"
+        ],
+        "quotes": [
+          "in existing admin dashboard",
+          "platform admin can configure their payment details to receive the commission"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin Stripe configuration form is visible on AdminDashboard",
+        "Form displays current admin Stripe account ID if configured",
+        "Admin can input and update Stripe account ID",
+        "Form validation ensures valid account ID format",
+        "Success/error messages displayed on save"
+      ]
+    },
+    {
+      "id": "REQ-41",
+      "text": "Implement backend function in backend/main.mo named processSplitPayment that calculates the commission split based on the configured commission rate, and coordinates payment distribution to both admin and artist Stripe accounts",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-user-stripe-key-setup"
+        ],
+        "quotes": [
+          "when a purchase is actioned, the admin comision is executed and a split payment sent to platform admin and to user that made the sale"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Function accepts product ID, purchase amount, and buyer information as parameters",
+        "Function retrieves current commission rate from storage",
+        "Function calculates admin commission and artist share based on commission rate",
+        "Function identifies artist's payment method (Stripe Connect account ID or API key)",
+        "Function identifies admin's Stripe account ID",
+        "Function returns success/failure status with transaction details",
+        "Function handles errors when payment configuration is missing for admin or artist"
+      ]
+    },
+    {
+      "id": "REQ-42",
+      "text": "Update the BuyNowButton component in frontend/src/components/BuyNowButton.tsx to trigger the processSplitPayment backend function after successful Stripe checkout completion, ensuring automatic payment distribution occurs",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-stripe-key-setup"
+        ],
+        "quotes": [
+          "when a purchase is actioned, the admin comision is executed and a split payment sent to platform admin and to user that made the sale"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After successful Stripe checkout, split payment function is called",
+        "Loading state displayed during split payment processing",
+        "Success message shown when split payment completes successfully",
+        "Error handling and user feedback when split payment fails",
+        "Payment success page reflects that payment has been distributed"
+      ]
+    },
+    {
+      "id": "REQ-43",
+      "text": "Add validation to the product checkout flow that prevents purchase if either the artist or admin has not configured their Stripe payment details, displaying a clear error message to the buyer",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-bulk-upload"
+          "msg-user-stripe-key-setup"
         ],
         "quotes": [
-          "Artist donations separate from product purchases"
+          "when a purchase is actioned, the admin comision is executed and a split payment sent to platform admin and to user that made the sale"
         ]
       },
       "acceptanceCriteria": [
-        "Artists can create donation listings separate from product listings",
-        "Donation form includes fields for title, description, and optional suggested amount",
-        "Donations appear in the artist's product management interface with a clear 'donation' indicator",
-        "Buyers can specify custom donation amounts at checkout"
-      ]
-    },
-    {
-      "id": "REQ-22",
-      "text": "Implement separate filtering and display sections in the marketplace listing page to show products and donations in distinct areas",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-bulk-upload"
-        ],
-        "quotes": [
-          "Artist donations separate from product purchases"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Marketplace displays products and donations in separate sections or tabs",
-        "Each section is clearly labeled ('Products' and 'Support Artists' or similar)",
-        "Donation cards visually distinguish themselves from product cards",
-        "Users can navigate between product listings and donation listings"
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Add a store settings interface for artists to customize their store presentation including store name, bio, banner image, and social media links",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-user-bulk-upload"
-        ],
-        "quotes": [
-          "Product store with customizable settings"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Artists can access store settings from their dashboard",
-        "Settings include store name, bio/description, banner image upload, and social media link fields",
-        "Changes are saved to the artist profile in the backend",
-        "Store customization is reflected on the artist's public store page"
-      ]
-    },
-    {
-      "id": "REQ-24",
-      "text": "Create a public artist store page that displays an individual artist's products and donations with their customized store branding and settings",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-bulk-upload"
-        ],
-        "quotes": [
-          "Product store with customizable settings"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Each artist has a dedicated public store URL (e.g., /store/[artistId])",
-        "Store page displays artist's custom store name, bio, and banner image",
-        "All products and donations from that artist are displayed on their store page",
-        "Social media links are visible and clickable",
-        "Store page is accessible to all visitors without authentication"
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "text": "Add navigation from product cards in the main marketplace to individual artist store pages so buyers can explore all items from a specific artist",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-bulk-upload"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Product cards display clickable artist name or link",
-        "Clicking artist name navigates to that artist's dedicated store page",
-        "Artist store page loads with all products and donations from that artist"
+        "Backend validates that artist has either Stripe Connect account or API key configured",
+        "Backend validates that admin has Stripe account ID configured",
+        "Checkout is blocked if payment configuration is incomplete",
+        "Clear error message displayed to buyer explaining the issue",
+        "Product card or buy button indicates when payment configuration is incomplete"
       ]
     }
   ],
   "constraints": [
-    "Maintain single-actor backend architecture in backend/main.mo",
-    "Do not modify frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts",
-    "Do not modify components in frontend/src/components/ui directory",
-    "Use existing Stripe checkout integration for both product and donation payments",
-    "Preserve existing commission rate logic (10% platform, 90% artist) for both products and donations"
+    "Do not modify the existing Stripe Connect onboarding implementation - extend it to support dual payment options",
+    "Maintain single-actor architecture in backend/main.mo",
+    "Do not modify immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
+    "Preserve existing commission rate configuration in CommissionSettings component",
+    "Ensure split payment logic respects the dynamically configured commission rate from admin settings"
   ],
   "nonGoals": [
-    "Shopping cart functionality (immediate checkout only)",
-    "Batch editing of product details after bulk upload",
-    "Artist-to-artist messaging or collaboration features",
-    "Advanced donation tiers or recurring donation subscriptions",
-    "External social media API integration"
+    "Implementing actual Stripe API payment processing (focus on data model and UI flow)",
+    "Modifying the existing revenue analytics dashboard",
+    "Changing the existing checkout session creation logic beyond adding split payment trigger",
+    "Adding payment history or transaction logs",
+    "Implementing refund or dispute handling"
   ],
   "imageRequirements": {
-    "required": [
-      "Artist store banner placeholder image with abstract artistic pattern for store customization (store-banner-placeholder.dim_1200x300.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }
