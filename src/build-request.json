@@ -1,0 +1,159 @@
+{
+  "kind": "build_request",
+  "title": "Add bulk image upload, artist donations, and product store settings",
+  "projectName": "Artisan Hub Marketplace",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-19",
+      "text": "Add bulk image upload functionality to the artist dashboard that allows artists to select multiple image files at once and automatically create a separate product listing for each uploaded image",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ],
+        "quotes": [
+          "Bulk image upload (each image becomes an item)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Artist can select multiple image files in a single upload action",
+        "Each uploaded image automatically creates a new product listing",
+        "Each auto-created product has the image set as its primary photo",
+        "Artist can edit product details (name, description, price, category) after bulk creation",
+        "Upload progress is displayed for multiple files",
+        "Error handling shows which files failed to upload and why"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "text": "Update the Product data model in the backend to include a productType field that distinguishes between 'product' and 'donation' types",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ],
+        "quotes": [
+          "Artist donations separate from product purchases"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Product type has exactly two variants: 'product' and 'donation'",
+        "Existing products default to 'product' type during migration",
+        "Product type is stored and retrievable via backend queries"
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "text": "Create a donation creation flow in the artist dashboard that allows artists to set up donation options with customizable amounts, descriptions, and optional suggested amounts",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ],
+        "quotes": [
+          "Artist donations separate from product purchases"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Artists can create donation listings separate from product listings",
+        "Donation form includes fields for title, description, and optional suggested amount",
+        "Donations appear in the artist's product management interface with a clear 'donation' indicator",
+        "Buyers can specify custom donation amounts at checkout"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Implement separate filtering and display sections in the marketplace listing page to show products and donations in distinct areas",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ],
+        "quotes": [
+          "Artist donations separate from product purchases"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Marketplace displays products and donations in separate sections or tabs",
+        "Each section is clearly labeled ('Products' and 'Support Artists' or similar)",
+        "Donation cards visually distinguish themselves from product cards",
+        "Users can navigate between product listings and donation listings"
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Add a store settings interface for artists to customize their store presentation including store name, bio, banner image, and social media links",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ],
+        "quotes": [
+          "Product store with customizable settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Artists can access store settings from their dashboard",
+        "Settings include store name, bio/description, banner image upload, and social media link fields",
+        "Changes are saved to the artist profile in the backend",
+        "Store customization is reflected on the artist's public store page"
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Create a public artist store page that displays an individual artist's products and donations with their customized store branding and settings",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ],
+        "quotes": [
+          "Product store with customizable settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each artist has a dedicated public store URL (e.g., /store/[artistId])",
+        "Store page displays artist's custom store name, bio, and banner image",
+        "All products and donations from that artist are displayed on their store page",
+        "Social media links are visible and clickable",
+        "Store page is accessible to all visitors without authentication"
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Add navigation from product cards in the main marketplace to individual artist store pages so buyers can explore all items from a specific artist",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-bulk-upload"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Product cards display clickable artist name or link",
+        "Clicking artist name navigates to that artist's dedicated store page",
+        "Artist store page loads with all products and donations from that artist"
+      ]
+    }
+  ],
+  "constraints": [
+    "Maintain single-actor backend architecture in backend/main.mo",
+    "Do not modify frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts",
+    "Do not modify components in frontend/src/components/ui directory",
+    "Use existing Stripe checkout integration for both product and donation payments",
+    "Preserve existing commission rate logic (10% platform, 90% artist) for both products and donations"
+  ],
+  "nonGoals": [
+    "Shopping cart functionality (immediate checkout only)",
+    "Batch editing of product details after bulk upload",
+    "Artist-to-artist messaging or collaboration features",
+    "Advanced donation tiers or recurring donation subscriptions",
+    "External social media API integration"
+  ],
+  "imageRequirements": {
+    "required": [
+      "Artist store banner placeholder image with abstract artistic pattern for store customization (store-banner-placeholder.dim_1200x300.png)"
+    ],
+    "edits": []
+  }
+}

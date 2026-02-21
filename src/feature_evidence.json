@@ -1,0 +1,145 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-bulk-image-upload-functionality-to-the-artist-dashboard-that-allows-artists-to-select-multiple-image-files-at-once-and-automatically-create-a-separate-product-listing-for-each-uploaded-image",
+      "featureTitle": "Add bulk image upload functionality to the artist dashboard that allows artists to select multiple image files at once and automatically create a separate product listing for each uploaded image",
+      "files": [
+        "frontend/src/components/BulkImageUpload.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/ArtistDashboard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-donation-creation-flow-in-the-artist-dashboard-that-allows-artists-to-set-up-donation-options-with-customizable-amounts-descriptions-and-optional-suggested-amounts",
+      "featureTitle": "Create a donation creation flow in the artist dashboard that allows artists to set up donation options with customizable amounts, descriptions, and optional suggested amounts",
+      "files": [
+        "frontend/src/components/DonationCard.tsx",
+        "frontend/src/components/DonationForm.tsx",
+        "frontend/src/pages/ArtistDashboard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-21"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-separate-filtering-and-display-sections-in-the-marketplace-listing-page-to-show-products-and-donations-in-distinct-areas",
+      "featureTitle": "Implement separate filtering and display sections in the marketplace listing page to show products and donations in distinct areas",
+      "files": [
+        "frontend/src/pages/ProductListing.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-22"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-store-settings-interface-for-artists-to-customize-their-store-presentation-including-store-name-bio-banner-image-and-social-media-links",
+      "featureTitle": "Add a store settings interface for artists to customize their store presentation including store name, bio, banner image, and social media links",
+      "files": [
+        "frontend/src/components/StoreSettingsForm.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/ArtistDashboard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-23"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-public-artist-store-page-that-displays-an-individual-artist-s-products-and-donations-with-their-customized-store-branding-and-settings",
+      "featureTitle": "Create a public artist store page that displays an individual artist's products and donations with their customized store branding and settings",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ArtistStorePage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-24"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-navigation-from-product-cards-in-the-main-marketplace-to-individual-artist-store-pages-so-buyers-can-explore-all-items-from-a-specific-artist",
+      "featureTitle": "Add navigation from product cards in the main marketplace to individual artist store pages so buyers can explore all items from a specific artist",
+      "files": [
+        "frontend/src/components/DonationCard.tsx",
+        "frontend/src/components/ProductCard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-25"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

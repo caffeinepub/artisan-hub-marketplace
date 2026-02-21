@@ -1,0 +1,151 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Add bulk image upload, artist donations, and product store settings",
+  "requirements": [
+    {
+      "id": "REQ-19",
+      "summary": "Add bulk image upload functionality allowing artists to select multiple images and auto-create product listings",
+      "acceptanceCriteria": [
+        "Artist can select multiple image files in a single upload action",
+        "Each uploaded image automatically creates a new product listing",
+        "Each auto-created product has the image set as its primary photo",
+        "Artist can edit product details (name, description, price, category) after bulk creation",
+        "Upload progress is displayed for multiple files",
+        "Error handling shows which files failed to upload and why"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/BulkImageUpload.tsx",
+          "operation": "create",
+          "description": "Create a bulk image upload component that allows artists to select multiple files, shows upload progress for each file using ExternalBlob.withUploadProgress, and calls addProductsBulk backend capability after all images are uploaded. Use the blob-storage component to convert each file to ExternalBlob. Display individual file progress bars and error states. Verify the blob-storage component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add useBulkUploadProducts mutation hook that accepts an array of Product objects and calls actor.addProductsBulk, invalidating the products query cache on success."
+        },
+        {
+          "path": "frontend/src/pages/ArtistDashboard.tsx",
+          "operation": "modify",
+          "description": "Import and integrate the BulkImageUpload component into the artist dashboard above the existing product management table. Wire the component to create Product objects with productType set to 'product' and default values for name, description, price, and categoryName that artists can edit later."
+        }
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "summary": "Create donation creation flow allowing artists to set up donation options with customizable amounts and descriptions",
+      "acceptanceCriteria": [
+        "Artists can create donation listings separate from product listings",
+        "Donation form includes fields for title, description, and optional suggested amount",
+        "Donations appear in the artist's product management interface with a clear 'donation' indicator",
+        "Buyers can specify custom donation amounts at checkout"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/DonationForm.tsx",
+          "operation": "create",
+          "description": "Create a donation creation form component with fields for title (name), description, suggested amount (price), and category. Include a clear header indicating this creates a donation. Set productType to 'donation' when calling addProduct backend capability. Include validation for required fields and price format."
+        },
+        {
+          "path": "frontend/src/components/DonationCard.tsx",
+          "operation": "create",
+          "description": "Create a donation card component that displays donation details (title, description, suggested amount) with visual styling distinct from ProductCard. Include a 'Support' or 'Donate' button that uses BuyNowButton logic but allows custom amount input before checkout."
+        },
+        {
+          "path": "frontend/src/pages/ArtistDashboard.tsx",
+          "operation": "modify",
+          "description": "Add a tabbed interface or section toggle to switch between 'Products' and 'Donations' management. Display the DonationForm component in a modal or dedicated section. Filter displayed products by productType and show a 'donation' badge for donation items in the product table."
+        }
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "summary": "Implement separate filtering and display sections for products and donations in the marketplace",
+      "acceptanceCriteria": [
+        "Marketplace displays products and donations in separate sections or tabs",
+        "Each section is clearly labeled ('Products' and 'Support Artists' or similar)",
+        "Donation cards visually distinguish themselves from product cards",
+        "Users can navigate between product listings and donation listings"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ProductListing.tsx",
+          "operation": "modify",
+          "description": "Add tabbed navigation using shadcn/ui Tabs component to switch between 'Products' and 'Support Artists' sections. Filter products by productType field and render ProductCard components for products and DonationCard components for donations in their respective tabs. Import and use the DonationCard component."
+        }
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "summary": "Add store settings interface for artists to customize store presentation including name, bio, banner, and social links",
+      "acceptanceCriteria": [
+        "Artists can access store settings from their dashboard",
+        "Settings include store name, bio/description, banner image upload, and social media link fields",
+        "Changes are saved to the artist profile in the backend",
+        "Store customization is reflected on the artist's public store page"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/StoreSettingsForm.tsx",
+          "operation": "create",
+          "description": "Create a store settings form component with fields for store name, bio (textarea), banner image upload (using ExternalBlob from blob-storage component with upload progress), and social media links (Instagram, Facebook, Twitter, YouTube, TikTok). Load current settings using getStoreSettings backend capability and save using updateStoreSettings. Display the generated store banner placeholder image from frontend/public/assets/generated/store-banner-placeholder.dim_1200x300.png as a preview before upload. Use blob-storage component for banner image handling. Verify the blob-storage component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add useGetStoreSettings query hook that fetches store settings for a given artistId using actor.getStoreSettings, and useUpdateStoreSettings mutation hook that calls actor.updateStoreSettings and invalidates the store settings cache."
+        },
+        {
+          "path": "frontend/src/pages/ArtistDashboard.tsx",
+          "operation": "modify",
+          "description": "Add a 'Store Settings' navigation tab or button in the artist dashboard that opens the StoreSettingsForm component in a modal or dedicated section. Fetch the current user's artist profile to get artistId for store settings operations."
+        }
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "summary": "Create public artist store page displaying artist's products and donations with customized branding",
+      "acceptanceCriteria": [
+        "Each artist has a dedicated public store URL (e.g., /store/[artistId])",
+        "Store page displays artist's custom store name, bio, and banner image",
+        "All products and donations from that artist are displayed on their store page",
+        "Social media links are visible and clickable",
+        "Store page is accessible to all visitors without authentication"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ArtistStorePage.tsx",
+          "operation": "create",
+          "description": "Create a public artist store page component that accepts artistId as a route parameter. Fetch store settings using useGetStoreSettings and products using getProductsFiltered backend capability. Display banner image using ExternalBlob.getDirectURL(), store name, bio, and social media links as clickable icons. Render products and donations in separate sections using ProductCard and DonationCard components. Include loading and error states. This page should be accessible without authentication."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register a new route path '/store/$artistId' that renders the ArtistStorePage component. Use TanStack Router's route parameters to pass artistId to the page component."
+        }
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "summary": "Add navigation from product cards to individual artist store pages",
+      "acceptanceCriteria": [
+        "Product cards display clickable artist name or link",
+        "Clicking artist name navigates to that artist's dedicated store page",
+        "Artist store page loads with all products and donations from that artist"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Fetch the artist profile using the product's artistId to display the artist's name. Make the artist name a clickable link that navigates to '/store/$artistId' using TanStack Router's Link component. Style the link to be visually distinct (e.g., underline on hover)."
+        },
+        {
+          "path": "frontend/src/components/DonationCard.tsx",
+          "operation": "modify",
+          "description": "Add artist name display by fetching the artist profile using the donation's artistId. Make the artist name a clickable link that navigates to '/store/$artistId' using TanStack Router's Link component. Style consistently with ProductCard."
+        }
+      ]
+    }
+  ]
+}

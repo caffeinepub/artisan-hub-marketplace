@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 9,
+  "summary": "Artisan Hub Marketplace - Online marketplace for creatives to showcase and sell original work (3D prints, ceramics, paintings, music, videos). Features artist profiles with Stripe Connect integration, multi-photo upload, AI-generated descriptions, secure payments with 90% artist revenue share (10% admin commission), admin dashboard, and support for donations, job offerings, and gigs.",
+  "architectural_notes": [
+    "Stripe Connect for artist payment accounts - payments go directly to artist with 10% commission to admin",
+    "90% revenue share to artists, 10% commission to platform",
+    "Priority: Immediate checkout first, shopping cart deferred",
+    "Focus on artist onboarding and Stripe integration as primary flow",
+    "Multi-photo upload allows custom category names per upload (artist-defined)",
+    "AI-generated descriptions are editable by artists at any time",
+    "Revenue share percentages (90%/10%) should only be visible in admin dashboard and artist private dashboards, not on any public-facing pages"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Artist store banner placeholder image with abstract artistic pattern for store customization (store-banner-placeholder.dim_1200x300.png)",
+  "existing_features": [
+    {
+      "id": "feature-create-admin-dashboard-with-branding-and-site-configuration-settings-including-site-name-logo-upload-color-scheme-customization-and-tagline",
+      "title": "Create admin dashboard with branding and site configuration settings including site name, logo upload, color scheme customization, and tagline",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-user-management-interface-for-admin-to-view-all-registered-artists-their-status-total-sales-and-ability-to-activate-deactivate-artist-accounts",
+      "title": "Implement user management interface for admin to view all registered artists, their status, total sales, and ability to activate/deactivate artist accounts",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-revenue-tracking-and-analytics-dashboard-showing-total-platform-revenue-admin-commission-earned-10-of-all-sales-total-artist-earnings-90-share-number-of-transactions-and-revenue-trends-over-time",
+      "title": "Build revenue tracking and analytics dashboard showing total platform revenue, admin commission earned (10% of all sales), total artist earnings (90% share), number of transactions, and revenue trends over time",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-commission-settings-interface-allowing-admin-to-view-and-configure-the-platform-commission-rate-defaulting-to-10",
+      "title": "Create commission settings interface allowing admin to view and configure the platform commission rate, defaulting to 10%",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-stripe-connect-onboarding-flow-for-artists-to-link-existing-stripe-accounts-or-create-new-ones-storing-stripe-account-id-securely-in-artist-profile",
+      "title": "Implement Stripe Connect onboarding flow for artists to link existing Stripe accounts or create new ones, storing Stripe account ID securely in artist profile",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-immediate-checkout-flow-without-shopping-cart-functionality-allowing-buyers-to-purchase-one-item-at-a-time-using-stripe-checkout",
+      "title": "Implement immediate checkout flow without shopping cart functionality, allowing buyers to purchase one item at a time using Stripe checkout",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-artist-benefits-prominently-on-artist-onboarding-and-profile-pages-global-exposure-through-marketplace-listing-secure-stripe-payment-processing-easy-item-management-tools-and-90-revenue-share-retention",
+      "title": "Display artist benefits prominently on artist onboarding and profile pages: global exposure through marketplace listing, secure Stripe payment processing, easy item management tools, and 90% revenue share retention",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-custom-category-name-input-field-to-the-product-upload-form-that-allows-artists-to-specify-a-unique-category-label-for-each-product-listing-e-g-ceramic-bowls-abstract-series-nature-photography",
+      "title": "Add a custom category name input field to the product upload form that allows artists to specify a unique category label for each product listing (e.g., 'Ceramic Bowls', 'Abstract Series', 'Nature Photography')",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-the-custom-category-name-on-product-cards-in-the-marketplace-listing-and-product-detail-views-so-buyers-can-see-how-artists-have-categorized-their-work",
+      "title": "Display the custom category name on product cards in the marketplace listing and product detail views so buyers can see how artists have categorized their work",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-ai-generated-product-descriptions-that-automatically-create-compelling-text-from-uploaded-product-images-with-the-description-pre-populated-in-an-editable-text-field-that-artists-can-modify-at-any-time-before-or-after-publishing",
+      "title": "Implement AI-generated product descriptions that automatically create compelling text from uploaded product images, with the description pre-populated in an editable text field that artists can modify at any time before or after publishing",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-references-to-90-revenue-share-10-commission-and-any-percentage-based-revenue-information-from-the-artistbenefits-component-displayed-on-public-facing-pages",
+      "title": "Remove all references to '90% revenue share', '10% commission', and any percentage-based revenue information from the ArtistBenefits component displayed on public-facing pages",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-text-90-of-your-payment-goes-directly-to-the-artist-from-the-paymentsuccess-page",
+      "title": "Remove the text '90% of your payment goes directly to the artist' from the PaymentSuccess page",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-revenue-share-information-remains-visible-to-artists-in-their-private-artistdashboard-and-any-artist-specific-profile-settings",
+      "title": "Ensure revenue share information remains visible to artists in their private ArtistDashboard and any artist-specific profile settings",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-bulk-image-upload-functionality-to-the-artist-dashboard-that-allows-artists-to-select-multiple-image-files-at-once-and-automatically-create-a-separate-product-listing-for-each-uploaded-image",
+      "title": "Add bulk image upload functionality to the artist dashboard that allows artists to select multiple image files at once and automatically create a separate product listing for each uploaded image",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-donation-creation-flow-in-the-artist-dashboard-that-allows-artists-to-set-up-donation-options-with-customizable-amounts-descriptions-and-optional-suggested-amounts",
+      "title": "Create a donation creation flow in the artist dashboard that allows artists to set up donation options with customizable amounts, descriptions, and optional suggested amounts",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-separate-filtering-and-display-sections-in-the-marketplace-listing-page-to-show-products-and-donations-in-distinct-areas",
+      "title": "Implement separate filtering and display sections in the marketplace listing page to show products and donations in distinct areas",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-store-settings-interface-for-artists-to-customize-their-store-presentation-including-store-name-bio-banner-image-and-social-media-links",
+      "title": "Add a store settings interface for artists to customize their store presentation including store name, bio, banner image, and social media links",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-public-artist-store-page-that-displays-an-individual-artist-s-products-and-donations-with-their-customized-store-branding-and-settings",
+      "title": "Create a public artist store page that displays an individual artist's products and donations with their customized store branding and settings",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-navigation-from-product-cards-in-the-main-marketplace-to-individual-artist-store-pages-so-buyers-can-explore-all-items-from-a-specific-artist",
+      "title": "Add navigation from product cards in the main marketplace to individual artist store pages so buyers can explore all items from a specific artist",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Artist profiles with Stripe Connect integration",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Auto-posting to marketplace",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Secure Stripe payments with immediate checkout",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Admin dashboard for branding and site configuration",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Admin user management",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Revenue tracking and analytics dashboard",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Commission settings (10% default)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Job offerings and gigs marketplace",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Booking system for artists",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Configure payment processing so that when a buyer purchases an item, payment goes directly to the artist's Stripe account with 10% commission automatically deducted and sent to the admin's Stripe account",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Update the Product data model in the backend to include a categoryName field of type Text that stores the artist's custom category label for each product",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Remove revenue/percentage information from all public-facing pages while keeping it visible in admin dashboard and artist private dashboards",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Remove all revenue percentage mentions from the ArtistRegistration page including any text about revenue share or commission rates",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Ensure CommissionSettings component remains visible and functional in the admin dashboard for viewing and configuring platform commission rates",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Ensure RevenueAnalytics component remains visible in the admin dashboard showing total platform revenue, admin commission earned, total artist earnings, and transaction counts",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Update the Product data model in the backend to include a productType field that distinguishes between 'product' and 'donation' types",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Artisan Hub Marketplace",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
