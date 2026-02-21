@@ -70,8 +70,10 @@ export interface TransformationOutput {
 }
 export interface UserProfile {
   'bio' : [] | [string],
+  'termsAccepted' : boolean,
   'stripeApiKey' : [] | [string],
   'name' : string,
+  'privacyPolicyAccepted' : boolean,
   'email' : string,
 }
 export type UserRole = { 'admin' : null } |
@@ -119,9 +121,12 @@ export interface _SERVICE {
     string
   >,
   'deleteProduct' : ActorMethod<[string], undefined>,
+  'deleteUser' : ActorMethod<[Principal], undefined>,
+  'deleteUserProfile' : ActorMethod<[Principal], undefined>,
   'getAllArtists' : ActorMethod<[], Array<ArtistProfile>>,
   'getAllProducts' : ActorMethod<[], Array<Product>>,
   'getAllProductsForArtist' : ActorMethod<[string], Array<Product>>,
+  'getAllUserProfiles' : ActorMethod<[], Array<UserProfile>>,
   'getArtist' : ActorMethod<[string], [] | [ArtistProfile]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,

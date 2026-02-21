@@ -1,116 +1,99 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Implement split payment system with dual Stripe configuration options - Frontend",
+  "title": "Add Terms and Conditions and Privacy Policy pages with footer links and required acceptance during registration",
   "requirements": [
     {
-      "id": "REQ-38",
-      "summary": "Add payment configuration section to artist dashboard allowing artists to provide Stripe API key or use Stripe Connect",
+      "id": "REQ-51",
+      "summary": "Create a Terms and Conditions page at route /terms with comprehensive placeholder template text",
       "acceptanceCriteria": [
-        "Payment configuration section is visible in artist dashboard",
-        "Form displays current payment method status (Stripe Connect or API key)",
-        "Artists can input and save Stripe API key",
-        "Artists can initiate Stripe Connect onboarding flow",
-        "Clear indication of which payment method is currently active",
-        "Validation that at least one payment method is configured before artists can receive payments"
+        "New route /terms is accessible and renders the Terms and Conditions page",
+        "Page displays comprehensive placeholder text covering marketplace terms",
+        "Content is presented in a clean, scrollable format",
+        "Template text includes sections for user responsibilities, intellectual property, payment terms, dispute resolution, and liability"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/PaymentMethodSetup.tsx",
+          "path": "frontend/src/pages/TermsAndConditions.tsx",
           "operation": "create",
-          "description": "Create a new component that displays payment configuration options for artists. Include a form with radio button group to select between 'Stripe API Key' and 'Stripe Connect'. For API key option, provide a secure text input field with show/hide toggle. For Stripe Connect, display connection status and an 'Onboard with Stripe Connect' button. Show which method is currently active with visual indicators. Include validation that ensures at least one payment method is configured. Use the authorization component to verify the user is authenticated before displaying payment options."
+          "description": "Create a new page component that displays comprehensive Terms and Conditions placeholder text in a scrollable format. Include sections for user responsibilities, intellectual property rights, payment terms, dispute resolution, liability disclaimers, account terms, prohibited activities, refund policy, and governing law. Use semantic HTML with proper heading hierarchy and styling consistent with the existing application theme."
         },
         {
-          "path": "frontend/src/pages/ArtistDashboard.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add a new 'Payment Setup' tab to the existing tabs (Products, Donations, Store Settings). Import and render the PaymentMethodSetup component within this tab. Position the Payment Setup tab between Store Settings and other tabs. Ensure the tab is accessible to authenticated artists only."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add mutation hooks for saving and retrieving artist payment configuration. Create useSavePaymentMethod mutation that calls saveCallerUserProfile with the stripeApiKey field. Create useGetPaymentMethod query that retrieves the current user profile and extracts the stripeApiKey field. These hooks will support the PaymentMethodSetup component's data operations."
+          "description": "Register the /terms route in the TanStack Router configuration to render the TermsAndConditions page component. Add the route alongside existing routes in the router setup."
         }
       ]
     },
     {
-      "id": "REQ-40",
-      "summary": "Add Stripe account configuration form to admin dashboard for platform commission payments",
+      "id": "REQ-52",
+      "summary": "Create a Privacy Policy page at route /privacy-policy with comprehensive placeholder template text",
       "acceptanceCriteria": [
-        "Admin Stripe configuration form is visible on AdminDashboard",
-        "Form displays current admin Stripe account ID if configured",
-        "Admin can input and update Stripe account ID",
-        "Form validation ensures valid account ID format",
-        "Success/error messages displayed on save"
+        "New route /privacy-policy is accessible and renders the Privacy Policy page",
+        "Page displays comprehensive placeholder text covering privacy practices",
+        "Content is presented in a clean, scrollable format",
+        "Template text includes sections for data collection, usage, cookies, third-party services, security, and user rights"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminStripeAccountSetup.tsx",
+          "path": "frontend/src/pages/PrivacyPolicy.tsx",
           "operation": "create",
-          "description": "Create a component for admin Stripe account configuration. Display a form with a text input for Stripe account ID (format: acct_XXXXXXXXXX). Show the current account ID if already configured, with option to update. Include format validation for Stripe account IDs. Display success toast on successful save and error toast on failure. Use the authorization component to ensure only admins can access this form."
+          "description": "Create a new page component that displays comprehensive Privacy Policy placeholder text in a scrollable format. Include sections for information collection, data usage, cookies and tracking, third-party services, data security measures, user rights (access, correction, deletion), data retention, international transfers, children's privacy, and contact information. Use semantic HTML with proper heading hierarchy and styling consistent with the existing application theme."
         },
         {
-          "path": "frontend/src/pages/AdminDashboard.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Import and render the AdminStripeAccountSetup component below the existing StripeSetup component on the admin dashboard. Add a section heading 'Platform Payment Configuration' above the new component. Ensure proper spacing between the existing Stripe configuration and the new admin account setup."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add useSetAdminStripeAccountId mutation hook that calls the backend setAdminStripeAccountId function. Add useGetAdminStripeAccountId query hook that retrieves the admin Stripe account ID from backend storage. These hooks will support the AdminStripeAccountSetup component's save and display functionality."
+          "description": "Register the /privacy-policy route in the TanStack Router configuration to render the PrivacyPolicy page component. Add the route alongside existing routes in the router setup."
         }
       ]
     },
     {
-      "id": "REQ-42",
-      "summary": "Update BuyNowButton to trigger split payment processing after successful Stripe checkout",
+      "id": "REQ-53",
+      "summary": "Update the Layout component footer to include links to Terms and Conditions and Privacy Policy pages",
       "acceptanceCriteria": [
-        "After successful Stripe checkout, split payment function is called",
-        "Loading state displayed during split payment processing",
-        "Success message shown when split payment completes successfully",
-        "Error handling and user feedback when split payment fails",
-        "Payment success page reflects that payment has been distributed"
+        "Footer section contains clickable links to /terms and /privacy-policy",
+        "Footer is displayed consistently across all pages",
+        "Links are styled appropriately and accessible"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BuyNowButton.tsx",
+          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Add payment validation check before creating checkout session: verify that both artist and admin have payment configuration (check artist's stripeApiKey or stripeAccountId, and admin's adminStripeAccountId). If payment configuration is incomplete, display error toast and prevent checkout. After successful Stripe checkout completion (when returning from Stripe), trigger the backend processSplitPayment function with the product details, artist ID, and buyer principal. Add loading state management during split payment processing. Show success toast when split payment completes. Handle errors with user-friendly error messages and toast notifications."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add useProcessSplitPayment mutation hook that calls the backend processSplitPayment function with ShoppingItem, artistId, and buyerId parameters. Add useValidatePaymentSetup query hook that checks if both artist and admin payment configurations are complete before allowing checkout. These hooks will support the BuyNowButton's split payment flow."
-        },
-        {
-          "path": "frontend/src/pages/PaymentSuccess.tsx",
-          "operation": "modify",
-          "description": "Add informational text below the success message indicating that payment has been distributed to the artist and platform. Include a brief explanation that the commission has been processed. Maintain the existing 'Continue Shopping' button and success icon."
+          "description": "Add clickable links to the Terms and Conditions (/terms) and Privacy Policy (/privacy-policy) pages in the existing footer section. Position the links appropriately within the footer layout (e.g., before or alongside social links). Ensure links use TanStack Router's Link component for proper navigation and apply consistent styling with other footer elements. Maintain all existing footer content including social links."
         }
       ]
     },
     {
-      "id": "REQ-43",
-      "summary": "Add validation to prevent purchase if payment configuration is incomplete",
+      "id": "REQ-54",
+      "summary": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to ProfileSetupModal",
       "acceptanceCriteria": [
-        "Checkout is blocked if payment configuration is incomplete",
-        "Clear error message displayed to buyer explaining the issue",
-        "Product card or buy button indicates when payment configuration is incomplete"
+        "Two checkboxes are displayed in the profile setup modal for Terms and Conditions and Privacy Policy",
+        "Each checkbox label includes a clickable link to the respective legal page",
+        "Submit button is disabled until both checkboxes are checked",
+        "Form validation prevents submission without acceptance"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProductCard.tsx",
+          "path": "frontend/src/components/ProfileSetupModal.tsx",
           "operation": "modify",
-          "description": "Add payment configuration status check for the product's artist. If the artist or admin lacks payment configuration, display a badge or notice on the product card indicating 'Payment setup pending'. Disable or visually indicate the buy button when payment configuration is incomplete. Show tooltip or message explaining that the product cannot be purchased until the artist configures payment settings."
-        },
+          "description": "Add two required checkbox fields to the profile setup form: one for Terms and Conditions acceptance and one for Privacy Policy acceptance. Each checkbox label should include a clickable link (using TanStack Router Link component with target='_blank') to the respective legal page (/terms and /privacy-policy). Add form state to track both checkbox values (termsAccepted and privacyPolicyAccepted booleans). Disable the submit button when either checkbox is unchecked. Include both boolean fields in the UserProfile payload when calling saveCallerUserProfile mutation. Add validation feedback if the user attempts to submit without accepting both."
+        }
+      ]
+    },
+    {
+      "id": "REQ-55",
+      "summary": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to ArtistRegistration page",
+      "acceptanceCriteria": [
+        "Two checkboxes are displayed in the artist registration form for Terms and Conditions and Privacy Policy",
+        "Each checkbox label includes a clickable link to the respective legal page",
+        "Submit button is disabled until both checkboxes are checked",
+        "Form validation prevents submission without acceptance"
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/components/BuyNowButton.tsx",
+          "path": "frontend/src/pages/ArtistRegistration.tsx",
           "operation": "modify",
-          "description": "Add pre-purchase validation that checks payment configuration completeness before initiating checkout. If artist has neither stripeApiKey nor stripeAccountId, or if admin lacks adminStripeAccountId, display a clear error toast message: 'This product cannot be purchased at this time. Payment configuration is incomplete.' Disable the button when validation fails. This operation extends the modification from REQ-42."
-        },
-        {
-          "path": "frontend/src/components/DonationCard.tsx",
-          "operation": "modify",
-          "description": "Add payment configuration status check for the donation's artist. If the artist or admin lacks payment configuration, display a notice on the donation card indicating 'Payment setup pending'. Disable donation buttons when payment configuration is incomplete. Show message explaining that donations cannot be accepted until payment settings are configured."
+          "description": "Add two required checkbox fields to the artist registration form: one for Terms and Conditions acceptance and one for Privacy Policy acceptance. Each checkbox label should include a clickable link (using TanStack Router Link component with target='_blank') to the respective legal page (/terms and /privacy-policy). Add form state to track both checkbox values (termsAccepted and privacyPolicyAccepted booleans). Disable the submit button when either checkbox is unchecked. Include both boolean fields in the ArtistProfile payload when calling the registerArtist mutation. Add validation feedback if the user attempts to submit without accepting both."
         }
       ]
     }

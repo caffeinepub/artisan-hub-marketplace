@@ -13,6 +13,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Table,
   TableBody,
   TableCell,
@@ -39,6 +49,7 @@ import BulkImageUpload from '../components/BulkImageUpload';
 import DonationForm from '../components/DonationForm';
 import StoreSettingsForm from '../components/StoreSettingsForm';
 import PaymentMethodSetup from '../components/PaymentMethodSetup';
+import { toast } from 'sonner';
 
 interface MediaFile {
   file: File;
@@ -58,6 +69,7 @@ export default function ArtistDashboard() {
   const { data: commissionRate } = useGetPlatformCommissionRate();
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [showStoreSettings, setShowStoreSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('products');
 
@@ -132,6 +144,7 @@ export default function ArtistDashboard() {
         imageUrls.push(url);
       } catch (error) {
         console.error('Failed to upload image:', error);
+        throw error;
       }
     }
 
@@ -150,126 +163,93 @@ export default function ArtistDashboard() {
         videoUrl = blob.getDirectURL();
       } catch (error) {
         console.error('Failed to upload video:', error);
+        throw error;
       }
     }
 
     return { imageUrls, videoUrl };
   };
 
-  const handleSaveProduct = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!artist) return;
+
     const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const price = formData.get('price') as string;
+    const categoryName = formData.get('categoryName') as string;
 
     try {
-      // Upload new media files
-      const { imageUrls: newImageUrls, videoUrl: newVideoUrl } = await uploadMediaFiles();
+      const { imageUrls, videoUrl } = await uploadMediaFiles();
 
-      // Combine existing and new image URLs
-      const existingImageUrls = editingProduct?.imageUrls || [];
-      const allImageUrls = [...existingImageUrls, ...newImageUrls];
-
-      // Use new video URL if uploaded, otherwise keep existing
-      const finalVideoUrl = newVideoUrl || editingProduct?.videoUrl;
-
-      const productData: Product = {
-        id: editingProduct?.id || `product-${Date.now()}`,
-        artistId: artist!.id,
-        name: formData.get('name') as string,
-        description: formData.get('description') as string,
-        price: BigInt(Math.round(parseFloat(formData.get('price') as string) * 100)),
-        categoryName: formData.get('categoryName') as string,
-        productType: editingProduct?.productType || ProductType.product,
-        imageUrls: allImageUrls,
-        videoUrl: finalVideoUrl,
+      const product: Product = {
+        id: editingProduct?.id || `${Date.now()}-${Math.random()}`,
+        artistId: artist.id,
+        name,
+        description,
+        price: BigInt(Math.round(parseFloat(price) * 100)),
+        categoryName,
+        productType: ProductType.product,
+        imageUrls,
+        videoUrl,
       };
 
-      if (editingProduct?.id) {
-        await updateProduct.mutateAsync(productData);
+      if (editingProduct) {
+        await updateProduct.mutateAsync(product);
       } else {
-        await addProduct.mutateAsync(productData);
+        await addProduct.mutateAsync(product);
       }
 
-      // Reset states
       setEditingProduct(null);
       setImageFiles([]);
       setVideoFile(null);
+      e.currentTarget.reset();
     } catch (error) {
       console.error('Failed to save product:', error);
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
 
     try {
-      await deleteProduct.mutateAsync(productId);
-    } catch (error) {
-      console.error('Failed to delete product:', error);
+      await deleteProduct.mutateAsync(productToDelete.id);
+      toast.success('Product deleted successfully');
+      setProductToDelete(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete product');
+      console.error('Delete product error:', error);
     }
   };
 
-  const handleEditProduct = (product: Product) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
-    setImageFiles([]);
-    setVideoFile(null);
+    setActiveTab('products');
   };
 
-  const handleAddProduct = () => {
-    setEditingProduct({
-      id: '',
-      artistId: artist!.id,
-      name: '',
-      description: '',
-      price: BigInt(0),
-      categoryName: '',
-      productType: ProductType.product,
-      imageUrls: [],
-      videoUrl: undefined,
-    });
-    setImageFiles([]);
-    setVideoFile(null);
+  const handleStoreSettingsClose = () => {
+    setShowStoreSettings(false);
   };
 
-  const removeExistingImage = (index: number) => {
-    if (editingProduct) {
-      const newImageUrls = editingProduct.imageUrls.filter((_, i) => i !== index);
-      setEditingProduct({ ...editingProduct, imageUrls: newImageUrls });
-    }
-  };
-
-  const removeExistingVideo = () => {
-    if (editingProduct) {
-      setEditingProduct({ ...editingProduct, videoUrl: undefined });
-    }
-  };
-
-  if (!identity || !userProfile) {
+  if (!identity) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Artist Dashboard</CardTitle>
-            <CardDescription>Please log in to access your dashboard</CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="container py-20 text-center">
+        <h2 className="text-2xl font-bold mb-4">Please log in to access your dashboard</h2>
       </div>
     );
   }
 
   if (!artist) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Artist Dashboard</CardTitle>
-            <CardDescription>You need to register as an artist first</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link to="/artist/register">
-              <Button>Register as Artist</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="container py-20 text-center">
+        <h2 className="text-2xl font-bold mb-4">Artist Profile Not Found</h2>
+        <p className="text-muted-foreground mb-6">
+          You need to register as an artist to access the dashboard.
+        </p>
+        <Link to="/artist/register">
+          <Button>Register as Artist</Button>
+        </Link>
       </div>
     );
   }
@@ -277,79 +257,204 @@ export default function ArtistDashboard() {
   const artistShare = commissionRate ? 100 - Number(commissionRate) : 90;
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container py-8">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Artist Dashboard</h1>
+          <h1 className="text-4xl font-bold mb-2">Artist Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {artist.name}</p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/store/$artistId" params={{ artistId: artist.id }}>
-            <Button variant="outline">View My Store</Button>
-          </Link>
-          <Button variant="outline" onClick={() => setShowStoreSettings(true)}>
-            <Settings className="mr-2 h-4 w-4" />
-            Store Settings
-          </Button>
-        </div>
+        <Button variant="outline" onClick={() => setShowStoreSettings(true)}>
+          <Settings className="mr-2 h-4 w-4" />
+          Store Settings
+        </Button>
       </div>
 
-      {/* Revenue Share Info */}
-      <Card className="bg-gradient-to-br from-primary/10 to-secondary/10">
+      {/* Revenue Share Card */}
+      <Card className="mb-8 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
         <CardHeader>
-          <CardTitle>Your Earnings</CardTitle>
-          <CardDescription>Revenue share information</CardDescription>
+          <CardTitle>Your Revenue Share</CardTitle>
+          <CardDescription>You earn {artistShare}% of each sale</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center">
-            <p className="text-5xl font-bold text-primary mb-2">{artistShare}%</p>
-            <p className="text-muted-foreground">
-              You keep {artistShare}% of every sale. We handle payments, hosting, and support.
-            </p>
-          </div>
+          <div className="text-4xl font-bold text-primary">{artistShare}%</div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Platform commission: {commissionRate ? Number(commissionRate) : 10}%
+          </p>
         </CardContent>
       </Card>
 
-      {/* Bulk Upload */}
-      <BulkImageUpload artistId={artist.id} />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="products">
+            <Package className="mr-2 h-4 w-4" />
+            Products
+          </TabsTrigger>
+          <TabsTrigger value="donations">
+            <Heart className="mr-2 h-4 w-4" />
+            Donations
+          </TabsTrigger>
+          <TabsTrigger value="bulk-upload">
+            <Upload className="mr-2 h-4 w-4" />
+            Bulk Upload
+          </TabsTrigger>
+          <TabsTrigger value="payment-setup">
+            <CreditCard className="mr-2 h-4 w-4" />
+            Payment Setup
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Products and Donations Management */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Manage Your Listings</CardTitle>
-              <CardDescription>Products, donations, and payment settings</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleAddProduct}>
-                <Package className="mr-2 h-4 w-4" />
-                Add Product
-              </Button>
-              <DonationForm artistId={artist.id} />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full max-w-2xl grid-cols-3">
-              <TabsTrigger value="products">
-                Products ({artistProducts.length})
-              </TabsTrigger>
-              <TabsTrigger value="donations">
-                Donations ({artistDonations.length})
-              </TabsTrigger>
-              <TabsTrigger value="payment">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Payment Setup
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="products" className="mt-4">
-              {artistProducts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No products yet. Add your first product or use bulk upload.
+        {/* Products Tab */}
+        <TabsContent value="products" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</CardTitle>
+              <CardDescription>
+                {editingProduct ? 'Update your product details' : 'Create a new product listing'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Product Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      defaultValue={editingProduct?.name}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price ($)</Label>
+                    <Input
+                      id="price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      defaultValue={editingProduct ? Number(editingProduct.price) / 100 : ''}
+                      required
+                    />
+                  </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="categoryName">Category</Label>
+                  <Input
+                    id="categoryName"
+                    name="categoryName"
+                    defaultValue={editingProduct?.categoryName}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    rows={4}
+                    defaultValue={editingProduct?.description}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Images</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                  />
+                  {imageFiles.length > 0 && (
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      {imageFiles.map((file) => (
+                        <div key={file.id} className="relative">
+                          <img
+                            src={file.url}
+                            alt="Preview"
+                            className="w-full h-32 object-cover rounded"
+                          />
+                          {file.uploading && (
+                            <Progress value={file.progress} className="mt-2" />
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2"
+                            onClick={() => removeImage(file.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Video (Optional)</Label>
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoSelect}
+                  />
+                  {videoFile && (
+                    <div className="relative mt-4">
+                      <video
+                        src={videoFile.url}
+                        className="w-full h-48 object-cover rounded"
+                        controls
+                      />
+                      {videoFile.uploading && (
+                        <Progress value={videoFile.progress} className="mt-2" />
+                      )}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={removeVideo}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={addProduct.isPending || updateProduct.isPending}>
+                    {editingProduct ? 'Update Product' : 'Add Product'}
+                  </Button>
+                  {editingProduct && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingProduct(null);
+                        setImageFiles([]);
+                        setVideoFile(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Products</CardTitle>
+              <CardDescription>Manage your product listings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {artistProducts.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  No products yet. Create your first product above.
+                </p>
               ) : (
                 <Table>
                   <TableHeader>
@@ -371,16 +476,16 @@ export default function ArtistDashboard() {
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditProduct(product)}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(product)}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteProduct(product.id)}
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setProductToDelete(product)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -391,13 +496,24 @@ export default function ArtistDashboard() {
                   </TableBody>
                 </Table>
               )}
-            </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <TabsContent value="donations" className="mt-4">
+        {/* Donations Tab */}
+        <TabsContent value="donations" className="space-y-6">
+          <DonationForm artistId={artist.id} />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Donations</CardTitle>
+              <CardDescription>Manage your donation options</CardDescription>
+            </CardHeader>
+            <CardContent>
               {artistDonations.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No donation options yet. Create one to let supporters contribute.
-                </div>
+                <p className="text-muted-foreground text-center py-8">
+                  No donation options yet. Create one above.
+                </p>
               ) : (
                 <Table>
                   <TableHeader>
@@ -411,247 +527,39 @@ export default function ArtistDashboard() {
                   <TableBody>
                     {artistDonations.map((donation) => (
                       <TableRow key={donation.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <Heart className="h-4 w-4 text-pink-500" />
-                            {donation.name}
-                          </div>
-                        </TableCell>
+                        <TableCell className="font-medium">{donation.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">{donation.categoryName}</Badge>
                         </TableCell>
                         <TableCell>${(Number(donation.price) / 100).toFixed(2)}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditProduct(donation)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteProduct(donation.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setProductToDelete(donation)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               )}
-            </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <TabsContent value="payment" className="mt-4">
-              <PaymentMethodSetup />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        {/* Bulk Upload Tab */}
+        <TabsContent value="bulk-upload">
+          <BulkImageUpload artistId={artist.id} />
+        </TabsContent>
 
-      {/* Edit Product Dialog */}
-      <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingProduct?.id ? 'Edit' : 'Add'}{' '}
-              {editingProduct?.productType === ProductType.donation ? 'Donation' : 'Product'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingProduct?.productType === ProductType.donation
-                ? 'Update donation details'
-                : 'Fill in the product details'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSaveProduct} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                {editingProduct?.productType === ProductType.donation ? 'Title' : 'Name'}
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                defaultValue={editingProduct?.name}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                defaultValue={editingProduct?.description}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">
-                {editingProduct?.productType === ProductType.donation ? 'Suggested Amount' : 'Price'} (USD)
-              </Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                min="0.01"
-                defaultValue={editingProduct?.price ? Number(editingProduct.price) / 100 : ''}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="categoryName">Category</Label>
-              <Input
-                id="categoryName"
-                name="categoryName"
-                defaultValue={editingProduct?.categoryName}
-                required
-              />
-            </div>
-
-            {/* Existing Images */}
-            {editingProduct && editingProduct.imageUrls.length > 0 && (
-              <div className="space-y-2">
-                <Label>Current Images</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {editingProduct.imageUrls.map((url, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={url}
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-24 object-cover rounded"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeExistingImage(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Existing Video */}
-            {editingProduct?.videoUrl && (
-              <div className="space-y-2">
-                <Label>Current Video</Label>
-                <div className="relative group">
-                  <video
-                    src={editingProduct.videoUrl}
-                    controls
-                    className="w-full h-48 rounded"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={removeExistingVideo}
-                  >
-                    <X className="mr-1 h-4 w-4" />
-                    Remove Video
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* New Images Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="images">Add Images</Label>
-              <Input
-                id="images"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageSelect}
-              />
-              {imageFiles.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  {imageFiles.map((file) => (
-                    <div key={file.id} className="relative group">
-                      <img
-                        src={file.url}
-                        alt="Preview"
-                        className="w-full h-24 object-cover rounded"
-                      />
-                      {file.uploading && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded">
-                          <Progress value={file.progress} className="w-3/4" />
-                        </div>
-                      )}
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeImage(file.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* New Video Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="video">Add Video</Label>
-              <Input
-                id="video"
-                type="file"
-                accept="video/*"
-                onChange={handleVideoSelect}
-              />
-              {videoFile && (
-                <div className="relative group">
-                  <video
-                    src={videoFile.url}
-                    controls
-                    className="w-full h-48 rounded"
-                  />
-                  {videoFile.uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded">
-                      <Progress value={videoFile.progress} className="w-3/4" />
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={removeVideo}
-                  >
-                    <X className="mr-1 h-4 w-4" />
-                    Remove
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setEditingProduct(null)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={addProduct.isPending || updateProduct.isPending}>
-                {addProduct.isPending || updateProduct.isPending ? 'Saving...' : 'Save'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        {/* Payment Setup Tab */}
+        <TabsContent value="payment-setup">
+          <PaymentMethodSetup />
+        </TabsContent>
+      </Tabs>
 
       {/* Store Settings Dialog */}
       <Dialog open={showStoreSettings} onOpenChange={setShowStoreSettings}>
@@ -659,12 +567,34 @@ export default function ArtistDashboard() {
           <DialogHeader>
             <DialogTitle>Store Settings</DialogTitle>
             <DialogDescription>
-              Customize your store appearance and information
+              Customize your artist store page
             </DialogDescription>
           </DialogHeader>
           <StoreSettingsForm artistId={artist.id} />
         </DialogContent>
       </Dialog>
+
+      {/* Delete Product Confirmation Dialog */}
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{productToDelete?.name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteProduct.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProduct}
+              disabled={deleteProduct.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteProduct.isPending ? 'Deleting...' : 'Delete Product'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

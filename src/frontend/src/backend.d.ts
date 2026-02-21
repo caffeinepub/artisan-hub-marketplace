@@ -88,8 +88,10 @@ export interface ArtistProfile {
 }
 export interface UserProfile {
     bio?: string;
+    termsAccepted: boolean;
     stripeApiKey?: string;
     name: string;
+    privacyPolicyAccepted: boolean;
     email: string;
 }
 export enum ProductType {
@@ -107,9 +109,12 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createCheckoutSession(items: Array<ShoppingItem>, successUrl: string, cancelUrl: string): Promise<string>;
     deleteProduct(productId: string): Promise<void>;
+    deleteUser(user: Principal): Promise<void>;
+    deleteUserProfile(user: Principal): Promise<void>;
     getAllArtists(): Promise<Array<ArtistProfile>>;
     getAllProducts(): Promise<Array<Product>>;
     getAllProductsForArtist(artistId: string): Promise<Array<Product>>;
+    getAllUserProfiles(): Promise<Array<UserProfile>>;
     getArtist(artistId: string): Promise<ArtistProfile | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;

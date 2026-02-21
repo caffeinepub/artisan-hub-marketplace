@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useSaveCallerUserProfile } from '../hooks/useQueries';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from '@tanstack/react-router';
 
 interface ProfileSetupModalProps {
   open: boolean;
@@ -16,6 +18,8 @@ export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyPolicyAccepted, setPrivacyPolicyAccepted] = useState(false);
   const saveProfile = useSaveCallerUserProfile();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,11 +30,19 @@ export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
       return;
     }
 
+    if (!termsAccepted || !privacyPolicyAccepted) {
+      toast.error('You must accept the Terms and Conditions and Privacy Policy to continue');
+      return;
+    }
+
     try {
       await saveProfile.mutateAsync({
         name: name.trim(),
         email: email.trim(),
         bio: bio.trim() || undefined,
+        termsAccepted,
+        privacyPolicyAccepted,
+        stripeApiKey: undefined,
       });
       toast.success('Profile created successfully!');
     } catch (error) {
@@ -39,9 +51,11 @@ export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
     }
   };
 
+  const isFormValid = name.trim() && email.trim() && termsAccepted && privacyPolicyAccepted;
+
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-[425px]" showCloseButton={false}>
+      <DialogContent className="sm:max-w-[500px]" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Welcome to Artisan Hub!</DialogTitle>
           <DialogDescription>
@@ -80,7 +94,48 @@ export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
               rows={3}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={saveProfile.isPending}>
+
+          <div className="space-y-4 pt-2">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+              />
+              <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+                I accept the{' '}
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Terms and Conditions
+                </Link>
+                {' '}*
+              </label>
+            </div>
+
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="privacy"
+                checked={privacyPolicyAccepted}
+                onCheckedChange={(checked) => setPrivacyPolicyAccepted(checked === true)}
+              />
+              <label htmlFor="privacy" className="text-sm leading-relaxed cursor-pointer">
+                I accept the{' '}
+                <Link
+                  to="/privacy-policy"
+                  target="_blank"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Privacy Policy
+                </Link>
+                {' '}*
+              </label>
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={saveProfile.isPending || !isFormValid}>
             {saveProfile.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

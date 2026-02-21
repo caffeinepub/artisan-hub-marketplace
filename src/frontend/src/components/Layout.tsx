@@ -167,12 +167,18 @@ export default function Layout({ children }: LayoutProps) {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">For Artists</h3>
+              <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>90% Revenue Share</li>
-                <li>Secure Payments</li>
-                <li>Global Exposure</li>
-                <li>Easy Management</li>
+                <li>
+                  <Link to="/terms" className="hover:text-foreground transition-colors">
+                    Terms and Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
               </ul>
             </div>
 

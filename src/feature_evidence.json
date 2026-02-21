@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-payment-configuration-section-to-the-artistdashboard-page-in-frontend-src-pages-artistdashboard-tsx-with-a-form-allowing-artists-to-either-provide-a-stripe-api-key-directly-or-use-stripe-connect-onboarding",
-      "featureTitle": "Add payment configuration section to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx with a form allowing artists to either provide a Stripe API key directly or use Stripe Connect onboarding",
+      "featureId": "feature-create-a-terms-and-conditions-page-at-route-terms-with-comprehensive-placeholder-template-text-covering-standard-marketplace-terms-including-user-responsibilities-intellectual-property-rights-payment-terms-dispute-resolution-and-liability-disclaimers-in-a-static-scrollable-format",
+      "featureTitle": "Create a Terms and Conditions page at route /terms with comprehensive placeholder template text covering standard marketplace terms including user responsibilities, intellectual property rights, payment terms, dispute resolution, and liability disclaimers in a static scrollable format",
       "files": [
-        "frontend/src/components/PaymentMethodSetup.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ArtistDashboard.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/TermsAndConditions.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,17 +20,16 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-38"
+        "REQ-51"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-stripe-account-configuration-form-to-the-admindashboard-page-in-frontend-src-pages-admindashboard-tsx-where-platform-admin-can-input-and-save-their-stripe-account-id-to-receive-commission-payments",
-      "featureTitle": "Add Stripe account configuration form to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx where platform admin can input and save their Stripe account ID to receive commission payments",
+      "featureId": "feature-create-a-privacy-policy-page-at-route-privacy-policy-with-comprehensive-placeholder-template-text-covering-data-collection-practices-user-information-usage-cookie-policies-third-party-services-data-security-and-user-rights-in-a-static-scrollable-format",
+      "featureTitle": "Create a Privacy Policy page at route /privacy-policy with comprehensive placeholder template text covering data collection practices, user information usage, cookie policies, third-party services, data security, and user rights in a static scrollable format",
       "files": [
-        "frontend/src/components/AdminStripeAccountSetup.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/AdminDashboard.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/PrivacyPolicy.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -45,17 +43,15 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-40"
+        "REQ-52"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-buynowbutton-component-in-frontend-src-components-buynowbutton-tsx-to-trigger-the-processsplitpayment-backend-function-after-successful-stripe-checkout-completion-ensuring-automatic-payment-distribution-occurs",
-      "featureTitle": "Update the BuyNowButton component in frontend/src/components/BuyNowButton.tsx to trigger the processSplitPayment backend function after successful Stripe checkout completion, ensuring automatic payment distribution occurs",
+      "featureId": "feature-update-the-layout-component-in-frontend-src-components-layout-tsx-to-include-footer-links-to-the-terms-and-conditions-terms-and-privacy-policy-privacy-policy-pages-ensuring-the-footer-is-visible-on-all-pages",
+      "featureTitle": "Update the Layout component in frontend/src/components/Layout.tsx to include footer links to the Terms and Conditions (/terms) and Privacy Policy (/privacy-policy) pages, ensuring the footer is visible on all pages",
       "files": [
-        "frontend/src/components/BuyNowButton.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/PaymentSuccess.tsx"
+        "frontend/src/components/Layout.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -69,17 +65,15 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-42"
+        "REQ-53"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-validation-to-the-product-checkout-flow-that-prevents-purchase-if-either-the-artist-or-admin-has-not-configured-their-stripe-payment-details-displaying-a-clear-error-message-to-the-buyer",
-      "featureTitle": "Add validation to the product checkout flow that prevents purchase if either the artist or admin has not configured their Stripe payment details, displaying a clear error message to the buyer",
+      "featureId": "feature-add-required-acceptance-checkboxes-for-terms-and-conditions-and-privacy-policy-to-the-profilesetupmodal-component-in-frontend-src-components-profilesetupmodal-tsx-preventing-profile-creation-until-both-checkboxes-are-checked",
+      "featureTitle": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to the ProfileSetupModal component in frontend/src/components/ProfileSetupModal.tsx, preventing profile creation until both checkboxes are checked",
       "files": [
-        "frontend/src/components/BuyNowButton.tsx",
-        "frontend/src/components/DonationCard.tsx",
-        "frontend/src/components/ProductCard.tsx"
+        "frontend/src/components/ProfileSetupModal.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -93,7 +87,29 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-43"
+        "REQ-54"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-required-acceptance-checkboxes-for-terms-and-conditions-and-privacy-policy-to-the-artistregistration-page-in-frontend-src-pages-artistregistration-tsx-preventing-artist-registration-until-both-checkboxes-are-checked",
+      "featureTitle": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to the ArtistRegistration page in frontend/src/pages/ArtistRegistration.tsx, preventing artist registration until both checkboxes are checked",
+      "files": [
+        "frontend/src/pages/ArtistRegistration.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-55"
       ],
       "confidence": "high"
     }

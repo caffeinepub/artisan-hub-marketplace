@@ -1,20 +1,54 @@
-import { useGetCallerUserRole, useGetAllArtists } from '../hooks/useQueries';
+import { useGetCallerUserRole, useGetAllArtists, useDeleteUser } from '../hooks/useQueries';
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import ArtistListItem from '../components/ArtistListItem';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Principal } from '@icp-sdk/core/principal';
+import type { ArtistProfile } from '../backend';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 export default function UserManagement() {
   const { data: userRole, isLoading: roleLoading } = useGetCallerUserRole();
   const { data: artists, isLoading: artistsLoading, error } = useGetAllArtists();
+  const deleteUser = useDeleteUser();
   const navigate = useNavigate();
+
+  const [artistToDelete, setArtistToDelete] = useState<ArtistProfile | null>(null);
 
   useEffect(() => {
     if (!roleLoading && userRole !== 'admin') {
       navigate({ to: '/products' });
     }
   }, [userRole, roleLoading, navigate]);
+
+  const handleDeleteUser = async () => {
+    if (!artistToDelete) return;
+
+    try {
+      const userPrincipal = Principal.fromText(artistToDelete.id);
+      await deleteUser.mutateAsync(userPrincipal);
+      toast.success('User deleted successfully. Transaction history has been preserved.');
+      setArtistToDelete(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete user');
+      console.error('Delete user error:', error);
+    }
+  };
 
   if (roleLoading || artistsLoading) {
     return (
@@ -56,10 +90,86 @@ export default function UserManagement() {
       {artists && artists.length > 0 && (
         <div className="space-y-4">
           {artists.map((artist) => (
-            <ArtistListItem key={artist.id} artist={artist} />
+            <Card key={artist.id}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 flex-1">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src="/assets/generated/artist-placeholder.dim_200x200.png" />
+                      <AvatarFallback>{artist.name[0]}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold truncate">{artist.name}</h3>
+                        <Badge variant={artist.isActive ? 'default' : 'secondary'}>
+                          {artist.isActive ? (
+                            <span className="flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Active
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1">
+                              <XCircle className="h-3 w-3" />
+                              Inactive
+                            </span>
+                          )}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{artist.email}</p>
+                      {artist.stripeAccountId && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Stripe Connected
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setArtistToDelete(artist)}
+                    disabled={deleteUser.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!artistToDelete} onOpenChange={(open) => !open && setArtistToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{artistToDelete?.name}</strong>? This action cannot be undone.
+              <br /><br />
+              <strong>Note:</strong> All transaction history will be preserved for audit and financial records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUser.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleteUser.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUser.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete User'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

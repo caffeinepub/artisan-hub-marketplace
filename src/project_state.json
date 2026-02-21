@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 13,
+  "projectStateVersion": 17,
   "summary": "Artisan Hub Marketplace - Online marketplace for creatives to showcase and sell original work (3D prints, ceramics, paintings, music, videos). Features artist profiles with Stripe Connect integration, multi-photo upload, AI-generated descriptions, secure payments with 90% artist revenue share (10% admin commission), admin dashboard, and support for donations, job offerings, and gigs.",
   "architectural_notes": [
     "Stripe Connect for artist payment accounts - payments go directly to artist with 10% commission to admin",
@@ -272,6 +272,86 @@
         "REQ-43"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-delete-user-button-to-the-usermanagement-page-in-frontend-src-pages-usermanagement-tsx-that-allows-admins-to-delete-any-user-account-with-a-confirmation-dialog",
+      "title": "Add delete user button to the UserManagement page in frontend/src/pages/UserManagement.tsx that allows admins to delete any user account with a confirmation dialog",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-product-button-to-the-artistdashboard-page-in-frontend-src-pages-artistdashboard-tsx-that-allows-artists-to-delete-their-own-products-with-a-confirmation-dialog",
+      "title": "Add delete product button to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx that allows artists to delete their own products with a confirmation dialog",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-product-button-to-the-admindashboard-page-in-frontend-src-pages-admindashboard-tsx-that-allows-admins-to-delete-any-product-across-all-artists-with-a-confirmation-dialog",
+      "title": "Add delete product button to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx that allows admins to delete any product across all artists with a confirmation dialog",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-usedeleteuser-mutation-hook-in-frontend-src-hooks-usequeries-ts-that-calls-the-deleteuser-backend-function-and-invalidates-relevant-queries",
+      "title": "Create useDeleteUser mutation hook in frontend/src/hooks/useQueries.ts that calls the deleteUser backend function and invalidates relevant queries",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-usedeleteproduct-mutation-hook-in-frontend-src-hooks-usequeries-ts-that-calls-the-deleteproduct-backend-function-and-invalidates-relevant-queries",
+      "title": "Create useDeleteProduct mutation hook in frontend/src/hooks/useQueries.ts that calls the deleteProduct backend function and invalidates relevant queries",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-terms-and-conditions-page-at-route-terms-with-comprehensive-placeholder-template-text-covering-standard-marketplace-terms-including-user-responsibilities-intellectual-property-rights-payment-terms-dispute-resolution-and-liability-disclaimers-in-a-static-scrollable-format",
+      "title": "Create a Terms and Conditions page at route /terms with comprehensive placeholder template text covering standard marketplace terms including user responsibilities, intellectual property rights, payment terms, dispute resolution, and liability disclaimers in a static scrollable format",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-privacy-policy-page-at-route-privacy-policy-with-comprehensive-placeholder-template-text-covering-data-collection-practices-user-information-usage-cookie-policies-third-party-services-data-security-and-user-rights-in-a-static-scrollable-format",
+      "title": "Create a Privacy Policy page at route /privacy-policy with comprehensive placeholder template text covering data collection practices, user information usage, cookie policies, third-party services, data security, and user rights in a static scrollable format",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-layout-component-in-frontend-src-components-layout-tsx-to-include-footer-links-to-the-terms-and-conditions-terms-and-privacy-policy-privacy-policy-pages-ensuring-the-footer-is-visible-on-all-pages",
+      "title": "Update the Layout component in frontend/src/components/Layout.tsx to include footer links to the Terms and Conditions (/terms) and Privacy Policy (/privacy-policy) pages, ensuring the footer is visible on all pages",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-required-acceptance-checkboxes-for-terms-and-conditions-and-privacy-policy-to-the-profilesetupmodal-component-in-frontend-src-components-profilesetupmodal-tsx-preventing-profile-creation-until-both-checkboxes-are-checked",
+      "title": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to the ProfileSetupModal component in frontend/src/components/ProfileSetupModal.tsx, preventing profile creation until both checkboxes are checked",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-required-acceptance-checkboxes-for-terms-and-conditions-and-privacy-policy-to-the-artistregistration-page-in-frontend-src-pages-artistregistration-tsx-preventing-artist-registration-until-both-checkboxes-are-checked",
+      "title": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to the ArtistRegistration page in frontend/src/pages/ArtistRegistration.tsx, preventing artist registration until both checkboxes are checked",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -450,6 +530,80 @@
       "summary": "Implement backend function in backend/main.mo named processSplitPayment that calculates the commission split based on the configured commission rate, and coordinates payment distribution to both admin and artist Stripe accounts",
       "reqIds": [
         "REQ-41"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Implement user account deletion that preserves transaction history - artists can delete their own accounts, admins can delete any user account",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Implement product deletion with role-based permissions - artists can delete only their own products, admins can delete any product",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-45",
+      "summary": "Add deleteUser backend function in backend/main.mo that removes a user account while preserving all transaction history records associated with that user",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-46",
+      "summary": "Add deleteProduct backend function in backend/main.mo that removes a product and enforces role-based permissions - artists can delete only their own products, admins can delete any product",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-47",
+      "summary": "Create Terms and Conditions page accessible via footer link with placeholder template text in a static scrollable format",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-48",
+      "summary": "Create Privacy Policy page accessible via footer link with placeholder template text in a static scrollable format",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "Add footer component to all pages with links to Terms and Conditions and Privacy Policy",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to user registration forms for both artists and buyers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Implement backend validation to prevent user registration without accepting Terms and Conditions and Privacy Policy",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-57",
+      "summary": "Add termsAccepted and privacyPolicyAccepted boolean fields to the UserProfile data model in backend/main.mo to store user acceptance status of legal documents",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-58",
+      "summary": "Implement backend validation in the createUserProfile and registerAsArtist functions in backend/main.mo to reject profile creation if termsAccepted or privacyPolicyAccepted are false, returning an appropriate error message",
+      "reqIds": [
+        "REQ-57"
       ],
       "status": "pending"
     }

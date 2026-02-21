@@ -1,164 +1,153 @@
 {
   "kind": "build_request",
-  "title": "Implement split payment system with dual Stripe configuration options",
+  "title": "Add Terms and Conditions and Privacy Policy pages with footer links and required acceptance during registration",
   "projectName": "Artisan Hub Marketplace",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-37",
-      "text": "Add a stripeApiKey optional field of type ?Text to the UserProfile data model in backend/main.mo to store artists' Stripe secret keys for direct payment configuration",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-user-stripe-key-setup"
-        ],
-        "quotes": [
-          "provide stripe key in settings or use of stripe connect, allow both options"
-        ]
-      },
-      "acceptanceCriteria": [
-        "UserProfile type includes optional stripeApiKey field",
-        "Existing artist profiles are not affected by schema addition",
-        "Field is securely stored and only accessible to the profile owner and admin"
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "text": "Add payment configuration section to the ArtistDashboard page in frontend/src/pages/ArtistDashboard.tsx with a form allowing artists to either provide a Stripe API key directly or use Stripe Connect onboarding",
+      "id": "REQ-51",
+      "text": "Create a Terms and Conditions page at route /terms with comprehensive placeholder template text covering standard marketplace terms including user responsibilities, intellectual property rights, payment terms, dispute resolution, and liability disclaimers in a static scrollable format",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-stripe-key-setup"
+          "msg-latest"
         ],
         "quotes": [
-          "create a stripe key setup in artist dashboard",
-          "provide stripe key in settings or use of stripe connect, allow both options"
+          "3 static pages with scrollable text",
+          "2 yes, create placeholder/template text"
         ]
       },
       "acceptanceCriteria": [
-        "Payment configuration section is visible in artist dashboard",
-        "Form displays current payment method status (Stripe Connect or API key)",
-        "Artists can input and save Stripe API key",
-        "Artists can initiate Stripe Connect onboarding flow",
-        "Clear indication of which payment method is currently active",
-        "Validation that at least one payment method is configured before artists can receive payments"
+        "New route /terms is accessible and renders the Terms and Conditions page",
+        "Page displays comprehensive placeholder text covering marketplace terms",
+        "Content is presented in a clean, scrollable format",
+        "Template text includes sections for user responsibilities, intellectual property, payment terms, dispute resolution, and liability"
       ]
     },
     {
-      "id": "REQ-39",
-      "text": "Add adminStripeAccountId field of type ?Text to backend storage in backend/main.mo to store the platform admin's Stripe account identifier for receiving commission payments",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-user-stripe-key-setup"
-        ],
-        "quotes": [
-          "in existing admin dashboard"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend storage includes adminStripeAccountId field",
-        "Field can be set and retrieved via backend function",
-        "Only users with admin role can access or modify this field"
-      ]
-    },
-    {
-      "id": "REQ-40",
-      "text": "Add Stripe account configuration form to the AdminDashboard page in frontend/src/pages/AdminDashboard.tsx where platform admin can input and save their Stripe account ID to receive commission payments",
+      "id": "REQ-52",
+      "text": "Create a Privacy Policy page at route /privacy-policy with comprehensive placeholder template text covering data collection practices, user information usage, cookie policies, third-party services, data security, and user rights in a static scrollable format",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-stripe-key-setup"
+          "msg-latest"
         ],
         "quotes": [
-          "in existing admin dashboard",
-          "platform admin can configure their payment details to receive the commission"
+          "3 static pages with scrollable text",
+          "2 yes, create placeholder/template text"
         ]
       },
       "acceptanceCriteria": [
-        "Admin Stripe configuration form is visible on AdminDashboard",
-        "Form displays current admin Stripe account ID if configured",
-        "Admin can input and update Stripe account ID",
-        "Form validation ensures valid account ID format",
-        "Success/error messages displayed on save"
+        "New route /privacy-policy is accessible and renders the Privacy Policy page",
+        "Page displays comprehensive placeholder text covering privacy practices",
+        "Content is presented in a clean, scrollable format",
+        "Template text includes sections for data collection, usage, cookies, third-party services, security, and user rights"
       ]
     },
     {
-      "id": "REQ-41",
-      "text": "Implement backend function in backend/main.mo named processSplitPayment that calculates the commission split based on the configured commission rate, and coordinates payment distribution to both admin and artist Stripe accounts",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-user-stripe-key-setup"
-        ],
-        "quotes": [
-          "when a purchase is actioned, the admin comision is executed and a split payment sent to platform admin and to user that made the sale"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Function accepts product ID, purchase amount, and buyer information as parameters",
-        "Function retrieves current commission rate from storage",
-        "Function calculates admin commission and artist share based on commission rate",
-        "Function identifies artist's payment method (Stripe Connect account ID or API key)",
-        "Function identifies admin's Stripe account ID",
-        "Function returns success/failure status with transaction details",
-        "Function handles errors when payment configuration is missing for admin or artist"
-      ]
-    },
-    {
-      "id": "REQ-42",
-      "text": "Update the BuyNowButton component in frontend/src/components/BuyNowButton.tsx to trigger the processSplitPayment backend function after successful Stripe checkout completion, ensuring automatic payment distribution occurs",
+      "id": "REQ-53",
+      "text": "Update the Layout component in frontend/src/components/Layout.tsx to include footer links to the Terms and Conditions (/terms) and Privacy Policy (/privacy-policy) pages, ensuring the footer is visible on all pages",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-stripe-key-setup"
+          "msg-latest"
         ],
         "quotes": [
-          "when a purchase is actioned, the admin comision is executed and a split payment sent to platform admin and to user that made the sale"
+          "1 footer, yes required to accept"
         ]
       },
       "acceptanceCriteria": [
-        "After successful Stripe checkout, split payment function is called",
-        "Loading state displayed during split payment processing",
-        "Success message shown when split payment completes successfully",
-        "Error handling and user feedback when split payment fails",
-        "Payment success page reflects that payment has been distributed"
+        "Footer section contains clickable links to /terms and /privacy-policy",
+        "Footer is displayed consistently across all pages",
+        "Links are styled appropriately and accessible"
       ]
     },
     {
-      "id": "REQ-43",
-      "text": "Add validation to the product checkout flow that prevents purchase if either the artist or admin has not configured their Stripe payment details, displaying a clear error message to the buyer",
-      "target": "both",
+      "id": "REQ-54",
+      "text": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to the ProfileSetupModal component in frontend/src/components/ProfileSetupModal.tsx, preventing profile creation until both checkboxes are checked",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-stripe-key-setup"
+          "msg-latest"
         ],
         "quotes": [
-          "when a purchase is actioned, the admin comision is executed and a split payment sent to platform admin and to user that made the sale"
+          "1 footer, yes required to accept"
         ]
       },
       "acceptanceCriteria": [
-        "Backend validates that artist has either Stripe Connect account or API key configured",
-        "Backend validates that admin has Stripe account ID configured",
-        "Checkout is blocked if payment configuration is incomplete",
-        "Clear error message displayed to buyer explaining the issue",
-        "Product card or buy button indicates when payment configuration is incomplete"
+        "Two checkboxes are displayed in the profile setup modal for Terms and Conditions and Privacy Policy",
+        "Each checkbox label includes a clickable link to the respective legal page",
+        "Submit button is disabled until both checkboxes are checked",
+        "Form validation prevents submission without acceptance"
+      ]
+    },
+    {
+      "id": "REQ-55",
+      "text": "Add required acceptance checkboxes for Terms and Conditions and Privacy Policy to the ArtistRegistration page in frontend/src/pages/ArtistRegistration.tsx, preventing artist registration until both checkboxes are checked",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "1 footer, yes required to accept"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Two checkboxes are displayed in the artist registration form for Terms and Conditions and Privacy Policy",
+        "Each checkbox label includes a clickable link to the respective legal page",
+        "Submit button is disabled until both checkboxes are checked",
+        "Form validation prevents submission without acceptance"
+      ]
+    },
+    {
+      "id": "REQ-56",
+      "text": "Add termsAccepted and privacyPolicyAccepted boolean fields to the UserProfile data model in backend/main.mo to store user acceptance status of legal documents",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "1 footer, yes required to accept"
+        ]
+      },
+      "acceptanceCriteria": [
+        "UserProfile type includes termsAccepted field of type Bool",
+        "UserProfile type includes privacyPolicyAccepted field of type Bool",
+        "Backend functions for creating user profiles accept and store these boolean values"
+      ]
+    },
+    {
+      "id": "REQ-57",
+      "text": "Implement backend validation in the createUserProfile and registerAsArtist functions in backend/main.mo to reject profile creation if termsAccepted or privacyPolicyAccepted are false, returning an appropriate error message",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "1 footer, yes required to accept"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend functions validate that both termsAccepted and privacyPolicyAccepted are true",
+        "Registration requests with false values for either field are rejected",
+        "Clear error messages are returned when validation fails",
+        "Existing users are not affected by the new validation"
       ]
     }
   ],
   "constraints": [
-    "Do not modify the existing Stripe Connect onboarding implementation - extend it to support dual payment options",
-    "Maintain single-actor architecture in backend/main.mo",
-    "Do not modify immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
-    "Preserve existing commission rate configuration in CommissionSettings component",
-    "Ensure split payment logic respects the dynamically configured commission rate from admin settings"
+    "Do not modify the existing Layout component's header, navigation, or authentication controls",
+    "Maintain the existing UserProfile schema structure while adding the new boolean fields",
+    "Ensure legal document acceptance is enforced for new registrations without affecting existing users"
   ],
   "nonGoals": [
-    "Implementing actual Stripe API payment processing (focus on data model and UI flow)",
-    "Modifying the existing revenue analytics dashboard",
-    "Changing the existing checkout session creation logic beyond adding split payment trigger",
-    "Adding payment history or transaction logs",
-    "Implementing refund or dispute handling"
+    "Implementing actual legal content - only placeholder template text is required",
+    "Adding legal document versioning or acceptance tracking beyond boolean flags",
+    "Creating admin interfaces to edit Terms and Conditions or Privacy Policy content",
+    "Implementing cookie consent banners or GDPR compliance features beyond basic privacy policy"
   ],
   "imageRequirements": {
     "required": [],

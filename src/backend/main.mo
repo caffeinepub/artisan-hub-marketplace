@@ -1,3 +1,4 @@
+import Migration "migration";
 import Map "mo:core/Map";
 import Principal "mo:core/Principal";
 import Stripe "stripe/stripe";
@@ -7,12 +8,11 @@ import OutCall "http-outcalls/outcall";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
-import Migration "migration";
 import Nat "mo:core/Nat";
 import Nat64 "mo:core/Nat64";
 import Text "mo:core/Text";
 
-// Specify the data migration function in with-clause
+// Apply migration module
 (with migration = Migration.run)
 actor {
   // Storage
@@ -28,6 +28,8 @@ actor {
     email : Text;
     bio : ?Text;
     stripeApiKey : ?Text;
+    termsAccepted : Bool;
+    privacyPolicyAccepted : Bool;
   };
 
   var userProfiles = Map.empty<Principal, UserProfile>();
@@ -46,11 +48,38 @@ actor {
     userProfiles.get(user);
   };
 
+  public query ({ caller }) func getAllUserProfiles() : async [UserProfile] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all user profiles");
+    };
+    userProfiles.values().toArray();
+  };
+
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
+    if (not profile.termsAccepted) {
+      Runtime.trap("User must accept terms and conditions");
+    };
+    if (not profile.privacyPolicyAccepted) {
+      Runtime.trap("User must accept privacy policy");
+    };
     userProfiles.add(caller, profile);
+  };
+
+  public shared ({ caller }) func deleteUserProfile(user : Principal) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can delete user profiles");
+    };
+    userProfiles.remove(user);
+  };
+
+  public shared ({ caller }) func deleteUser(user : Principal) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can delete users");
+    };
+    userProfiles.remove(user);
   };
 
   // Artists
@@ -368,7 +397,7 @@ actor {
     if (items.size() == 0) {
       Runtime.trap("No items provided");
     };
-    
+
     // Check admin Stripe setup
     switch (adminStripeAccountId) {
       case (null) {

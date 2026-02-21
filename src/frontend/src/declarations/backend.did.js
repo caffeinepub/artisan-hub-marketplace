@@ -55,8 +55,10 @@ export const ArtistProfile = IDL.Record({
 });
 export const UserProfile = IDL.Record({
   'bio' : IDL.Opt(IDL.Text),
+  'termsAccepted' : IDL.Bool,
   'stripeApiKey' : IDL.Opt(IDL.Text),
   'name' : IDL.Text,
+  'privacyPolicyAccepted' : IDL.Bool,
   'email' : IDL.Text,
 });
 export const SocialLinks = IDL.Record({
@@ -140,6 +142,8 @@ export const idlService = IDL.Service({
       [],
     ),
   'deleteProduct' : IDL.Func([IDL.Text], [], []),
+  'deleteUser' : IDL.Func([IDL.Principal], [], []),
+  'deleteUserProfile' : IDL.Func([IDL.Principal], [], []),
   'getAllArtists' : IDL.Func([], [IDL.Vec(ArtistProfile)], ['query']),
   'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
   'getAllProductsForArtist' : IDL.Func(
@@ -147,6 +151,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(Product)],
       ['query'],
     ),
+  'getAllUserProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
   'getArtist' : IDL.Func([IDL.Text], [IDL.Opt(ArtistProfile)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -239,8 +244,10 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserProfile = IDL.Record({
     'bio' : IDL.Opt(IDL.Text),
+    'termsAccepted' : IDL.Bool,
     'stripeApiKey' : IDL.Opt(IDL.Text),
     'name' : IDL.Text,
+    'privacyPolicyAccepted' : IDL.Bool,
     'email' : IDL.Text,
   });
   const SocialLinks = IDL.Record({
@@ -321,6 +328,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deleteProduct' : IDL.Func([IDL.Text], [], []),
+    'deleteUser' : IDL.Func([IDL.Principal], [], []),
+    'deleteUserProfile' : IDL.Func([IDL.Principal], [], []),
     'getAllArtists' : IDL.Func([], [IDL.Vec(ArtistProfile)], ['query']),
     'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
     'getAllProductsForArtist' : IDL.Func(
@@ -328,6 +337,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Product)],
         ['query'],
       ),
+    'getAllUserProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
     'getArtist' : IDL.Func([IDL.Text], [IDL.Opt(ArtistProfile)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),

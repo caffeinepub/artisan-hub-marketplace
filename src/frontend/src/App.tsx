@@ -13,6 +13,8 @@ import ArtistRegistration from './pages/ArtistRegistration';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import ArtistStorePage from './pages/ArtistStorePage';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +99,18 @@ const artistStoreRoute = createRoute({
   component: ArtistStorePage,
 });
 
+const termsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/terms',
+  component: TermsAndConditions,
+});
+
+const privacyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/privacy-policy',
+  component: PrivacyPolicy,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   productsRoute,
@@ -109,6 +123,8 @@ const routeTree = rootRoute.addChildren([
   paymentSuccessRoute,
   paymentFailureRoute,
   artistStoreRoute,
+  termsRoute,
+  privacyRoute,
 ]);
 
 const router = createRouter({ routeTree });
